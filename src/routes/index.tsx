@@ -1,24 +1,28 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
-export const Route = createFileRoute("/")({
-  component: Index,
-});
+import { EmbedApp } from "@/components/calculator/EmbedApp";
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
-}
+/**
+ * De root rendert dezelfde iframe-widget als /embed, zodat de calculator
+ * werkt ongeacht welke URL de hostpagina in het iframe zet.
+ */
+export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Nrgea energiecalculator — bereken je besparing" },
+      {
+        name: "description",
+        content:
+          "Simuleer je besparing op zonnepanelen, thuisbatterij, warmtepomp en meer met de Nrgea energiecalculator.",
+      },
+      { property: "og:title", content: "Nrgea energiecalculator" },
+      {
+        property: "og:description",
+        content: "Kies een simulatietool en bereken direct hoeveel je kunt besparen op energie.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: EmbedApp,
+});
