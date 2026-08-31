@@ -4,8 +4,8 @@ import { OptionCard } from "./OptionCard";
 export type RadioCardOption = {
   value: string;
   label: string;
-  description?: string;
-  icon?: LucideIcon;
+  description?: string | undefined;
+  icon?: LucideIcon | undefined;
 };
 
 export function RadioCards({

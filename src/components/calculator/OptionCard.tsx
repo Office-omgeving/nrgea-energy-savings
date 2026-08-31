@@ -9,9 +9,9 @@ export function OptionCard({
   onSelect,
 }: {
   label: string;
-  description?: string;
-  icon?: LucideIcon;
-  selected?: boolean;
+  description?: string | undefined;
+  icon?: LucideIcon | undefined;
+  selected?: boolean | undefined;
   onSelect: () => void;
 }) {
   return (
