@@ -1,12 +1,5 @@
 import { useMemo, useState } from "react";
-import {
-  BatteryCharging,
-  Car,
-  Euro,
-  Gauge,
-  Home,
-  Sun,
-} from "lucide-react";
+import { BatteryCharging, Car, Euro, Gauge, Home, Sun } from "lucide-react";
 
 import type { ServiceComponentProps } from "@/config/calculatorServices";
 import { PANEL_WP, REFERENCE_KWH_PRICE } from "@/config/solarConfig";
@@ -121,8 +114,11 @@ const INITIAL: State = {
 };
 
 const euro = (value: number) =>
-  new Intl.NumberFormat("nl-BE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })
-    .format(value);
+  new Intl.NumberFormat("nl-BE", {
+    style: "currency",
+    currency: "EUR",
+    maximumFractionDigits: 0,
+  }).format(value);
 const kwh = (value: number) => `${new Intl.NumberFormat("nl-BE").format(Math.round(value))} kWh`;
 
 export function SolarWizard({ service, onBackToOverview }: ServiceComponentProps) {
@@ -155,7 +151,15 @@ export function SolarWizard({ service, onBackToOverview }: ServiceComponentProps
         situations: state.situations,
         changes: state.changes,
       }),
-    [state.persons, state.heating, state.waterHeating, state.car, state.plannedCar, state.situations, state.changes],
+    [
+      state.persons,
+      state.heating,
+      state.waterHeating,
+      state.car,
+      state.plannedCar,
+      state.situations,
+      state.changes,
+    ],
   );
 
   const costEstimate = useMemo(() => {
@@ -182,7 +186,14 @@ export function SolarWizard({ service, onBackToOverview }: ServiceComponentProps
     }
     if (typeof state.manualKwh === "number" && state.manualKwh > 0) value = state.manualKwh;
     return { source, kwh: value, accuracy: accuracyFor(source) };
-  }, [state.method, state.kwhPerYear, state.costAccepted, state.manualKwh, costEstimate, household.total]);
+  }, [
+    state.method,
+    state.kwhPerYear,
+    state.costAccepted,
+    state.manualKwh,
+    costEstimate,
+    household.total,
+  ]);
 
   const pricePerKwh =
     state.knowsPrice === "yes" && typeof state.kwhPrice === "number" && state.kwhPrice > 0
@@ -282,8 +293,7 @@ export function SolarWizard({ service, onBackToOverview }: ServiceComponentProps
           {
             value: "estimate",
             label: "Maak een inschatting voor mij",
-            description:
-              "We schatten je verbruik op basis van je gezin en elektrische toestellen.",
+            description: "We schatten je verbruik op basis van je gezin en elektrische toestellen.",
             icon: Home,
           },
         ]}
@@ -317,7 +327,9 @@ export function SolarWizard({ service, onBackToOverview }: ServiceComponentProps
             legend="Is dit bedrag alleen voor elektriciteit?"
             columns={1}
             value={state.costElectricityOnly}
-            onChange={(value) => set({ costElectricityOnly: value as State["costElectricityOnly"] })}
+            onChange={(value) =>
+              set({ costElectricityOnly: value as State["costElectricityOnly"] })
+            }
             options={[
               { value: "yes", label: "Ja, alleen elektriciteit" },
               { value: "no", label: "Nee, elektriciteit en gas samen" },
@@ -363,7 +375,9 @@ export function SolarWizard({ service, onBackToOverview }: ServiceComponentProps
                   }
                   unit="€"
                   min={1}
-                  placeholder={state.costPeriod === "month" ? "Bijvoorbeeld €110" : "Bijvoorbeeld €1.320"}
+                  placeholder={
+                    state.costPeriod === "month" ? "Bijvoorbeeld €110" : "Bijvoorbeeld €1.320"
+                  }
                   hint="Gebruik alleen het elektriciteitsgedeelte. Tel gas, water en andere diensten niet mee."
                   value={state.costAmount}
                   onChange={(value) => set({ costAmount: value })}
@@ -469,7 +483,8 @@ export function SolarWizard({ service, onBackToOverview }: ServiceComponentProps
           {
             value: "heatPump",
             label: "Lucht-waterwarmtepomp",
-            description: "Een installatie die de woning verwarmt via vloerverwarming of radiatoren.",
+            description:
+              "Een installatie die de woning verwarmt via vloerverwarming of radiatoren.",
           },
           { value: "electric", label: "Elektrische verwarming of accumulatie" },
           { value: "other", label: "Anders" },
@@ -545,7 +560,9 @@ export function SolarWizard({ service, onBackToOverview }: ServiceComponentProps
       />
 
       <div className="rounded-xl border border-primary/30 bg-secondary p-4">
-        <p className="text-xs font-medium text-muted-foreground">Geschat jaarlijks stroomverbruik</p>
+        <p className="text-xs font-medium text-muted-foreground">
+          Geschat jaarlijks stroomverbruik
+        </p>
         <p className="mt-1 font-display text-2xl font-semibold text-foreground">
           Ongeveer {kwh(household.total)} per jaar
         </p>
@@ -760,7 +777,9 @@ export function SolarWizard({ service, onBackToOverview }: ServiceComponentProps
           Wij adviseren ongeveer {advice.panels} zonnepanelen
         </p>
         <ul className="mt-3 space-y-1 text-sm text-foreground">
-          <li>{advice.panels} panelen van {PANEL_WP} Wp</li>
+          <li>
+            {advice.panels} panelen van {PANEL_WP} Wp
+          </li>
           <li>Totaal: {advice.kwp.toFixed(2)} kWp</li>
           <li>Geschatte productie: {kwh(advice.production)} per jaar</li>
           <li>Geschat aandeel van je verbruik: {advice.coverage}%</li>
@@ -781,9 +800,7 @@ export function SolarWizard({ service, onBackToOverview }: ServiceComponentProps
 
       <AdvancedSection title="Advies handmatig aanpassen">
         <label className="block">
-          <span className="mb-1.5 block text-sm font-semibold text-foreground">
-            Aantal panelen
-          </span>
+          <span className="mb-1.5 block text-sm font-semibold text-foreground">Aantal panelen</span>
           <select
             value={state.panelOverride === "" ? "" : String(state.panelOverride)}
             onChange={(event) =>
@@ -868,12 +885,15 @@ export function SolarWizard({ service, onBackToOverview }: ServiceComponentProps
 
       {state.battery === "advice" ? (
         <div className="rounded-xl border border-border bg-card p-4">
-          <p className="text-sm font-semibold text-foreground">Vergelijking met en zonder batterij</p>
+          <p className="text-sm font-semibold text-foreground">
+            Vergelijking met en zonder batterij
+          </p>
           <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="rounded-xl border border-border p-3">
               <p className="text-xs text-muted-foreground">Alleen zonnepanelen</p>
               <p className="mt-1 text-sm font-semibold text-foreground">
-                {euro(comparison.withoutBattery.investment)} · {euro(comparison.withoutBattery.annualSavings)}/jaar
+                {euro(comparison.withoutBattery.investment)} ·{" "}
+                {euro(comparison.withoutBattery.annualSavings)}/jaar
               </p>
               <p className="text-xs text-muted-foreground">
                 Terugverdientijd {comparison.withoutBattery.paybackYears} jaar
@@ -884,7 +904,8 @@ export function SolarWizard({ service, onBackToOverview }: ServiceComponentProps
                 Met batterij van {comparison.recommendedKwh} kWh
               </p>
               <p className="mt-1 text-sm font-semibold text-foreground">
-                {euro(comparison.withBattery.investment)} · {euro(comparison.withBattery.annualSavings)}/jaar
+                {euro(comparison.withBattery.investment)} ·{" "}
+                {euro(comparison.withBattery.annualSavings)}/jaar
               </p>
               <p className="text-xs text-muted-foreground">
                 Terugverdientijd {comparison.withBattery.paybackYears} jaar
@@ -1000,7 +1021,11 @@ export function SolarWizard({ service, onBackToOverview }: ServiceComponentProps
     {
       label: "Aansluiting",
       value:
-        state.phase === "mono" ? "Monofase" : state.phase === "three" ? "Driefase" : "Nog te controleren",
+        state.phase === "mono"
+          ? "Monofase"
+          : state.phase === "three"
+            ? "Driefase"
+            : "Nog te controleren",
     },
     {
       label: "Bestaande zonnepanelen",
@@ -1030,7 +1055,11 @@ export function SolarWizard({ service, onBackToOverview }: ServiceComponentProps
     {
       label: "Slimme sturing",
       value:
-        state.smartControl === "yes" ? "Ja" : state.smartControl === "no" ? "Nee" : "Nog te bepalen",
+        state.smartControl === "yes"
+          ? "Ja"
+          : state.smartControl === "no"
+            ? "Nee"
+            : "Nog te bepalen",
     },
   ];
 
@@ -1042,7 +1071,11 @@ export function SolarWizard({ service, onBackToOverview }: ServiceComponentProps
         Onbekende gegevens vullen we voorlopig veilig in. Nrgea controleert alles tijdens de
         persoonlijke analyse.
       </InfoNotice>
-      <WizardNavigation onPrev={() => goto(2)} onNext={() => goto(4)} nextLabel="Naar mijn gegevens" />
+      <WizardNavigation
+        onPrev={() => goto(2)}
+        onNext={() => goto(4)}
+        nextLabel="Naar mijn gegevens"
+      />
     </div>
   );
 
@@ -1077,6 +1110,10 @@ export function SolarWizard({ service, onBackToOverview }: ServiceComponentProps
   /* ---------------------------------------------------------------- stap 6 */
   const renderResult = () => (
     <ResultsShell
+      price={{
+        value: euro(financials.investment),
+        hint: "Indicatieve installatieprijs inclusief btw.",
+      }}
       scenario={overviewItems}
       summary={
         <div className="space-y-3">
@@ -1102,7 +1139,6 @@ export function SolarWizard({ service, onBackToOverview }: ServiceComponentProps
             value={euro(financials.annualSavings)}
             hint="Eigen verbruik + injectie"
           />
-          <KpiCard label="Richtprijs investering" value={euro(financials.investment)} />
           <KpiCard
             label="Geschatte productie"
             value={kwh(advice.production)}

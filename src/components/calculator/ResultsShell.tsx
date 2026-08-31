@@ -4,6 +4,7 @@ import { ScenarioOverview, type ScenarioItem } from "./ScenarioOverview";
 /** Gedeelde resultaatshell: elke dienstflow vult de secties die relevant zijn. */
 export function ResultsShell({
   title = "Jouw resultaat",
+  price,
   scenario,
   summary,
   advice,
@@ -15,6 +16,7 @@ export function ResultsShell({
   onBackToOverview,
 }: {
   title?: string;
+  price?: { value: string; label?: string; hint?: string };
   scenario?: ScenarioItem[];
   summary?: ReactNode;
   advice?: ReactNode;
@@ -29,9 +31,21 @@ export function ResultsShell({
     <div className="space-y-5">
       <h2 className="font-display text-xl font-semibold text-foreground">{title}</h2>
 
+      {price ? (
+        <section className="rounded-xl border border-forest-surface bg-forest px-5 py-5 text-white">
+          <p className="text-sm font-medium text-mint/80">
+            {price.label ?? "Richtprijs investering"}
+          </p>
+          <p className="mt-1 font-display text-4xl font-semibold leading-none tracking-tight">
+            {price.value}
+          </p>
+          {price.hint ? <p className="mt-2 text-xs text-mint/70">{price.hint}</p> : null}
+        </section>
+      ) : null}
+
       {scenario && scenario.length > 0 ? <ScenarioOverview items={scenario} /> : null}
       {summary}
-      {kpis ? <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{kpis}</div> : null}
+      {kpis ? <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">{kpis}</div> : null}
       {chart}
       {advice}
 

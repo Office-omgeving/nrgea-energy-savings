@@ -1,16 +1,13 @@
 import type { ComponentType } from "react";
 import type { LucideIcon } from "lucide-react";
-import {
-  AirVent,
-  BatteryCharging,
-  Droplets,
-  Layers,
-  PiggyBank,
-  Sun,
-  Thermometer,
-} from "lucide-react";
+import { AirVent, BatteryCharging, Droplets, Sun, Thermometer } from "lucide-react";
 
-import { GenericServiceWizard } from "@/components/calculator/GenericServiceWizard";
+import {
+  AircoWizard,
+  BatteryWizard,
+  HeatPumpBoilerWizard,
+  HeatPumpWizard,
+} from "@/components/calculator/services/ServiceWizards";
 import { SolarWizard } from "@/components/calculator/solar/SolarWizard";
 
 export type ServiceComponentProps = {
@@ -34,8 +31,8 @@ export type CalculatorService = {
 
 /**
  * Centrale serviceregistratie.
- * Volgende prompts: (1) dienstflow implementeren, (2) hier registreren,
- * (3) pas daarna `enabled: true` zetten. Het raster toont enkel enabled diensten.
+ * Registreer een dienst pas als de eigen vragen, berekening en resultaatflow
+ * beschikbaar zijn. Het raster toont enkel enabled diensten.
  */
 export const calculatorServices: CalculatorService[] = [
   {
@@ -57,7 +54,7 @@ export const calculatorServices: CalculatorService[] = [
     icon: BatteryCharging,
     accent: "from-[#2F80ED] to-[#1B5FBF]",
     enabled: true,
-    component: GenericServiceWizard,
+    component: BatteryWizard,
   },
   {
     id: "lucht-water-warmtepomp",
@@ -68,7 +65,7 @@ export const calculatorServices: CalculatorService[] = [
     accent: "from-[#F2745C] to-[#D4453A]",
     badge: "Nieuwe premies",
     enabled: true,
-    component: GenericServiceWizard,
+    component: HeatPumpWizard,
   },
   {
     id: "warmtepompboiler",
@@ -79,19 +76,7 @@ export const calculatorServices: CalculatorService[] = [
     accent: "from-[#6B8CF2] to-[#7A5AF0]",
     badge: "Nieuwe premies",
     enabled: true,
-    component: GenericServiceWizard,
-  },
-  {
-    id: "totaalpakket",
-    slug: "totaalpakket",
-    title: "Totaalpakket",
-    subtitle: "Lucht-waterwarmtepomp + PV + batterij",
-    description: "Maximale besparing met zonnepanelen en een lucht-waterwarmtepomp.",
-    icon: Layers,
-    accent: "from-[#8B5CF6] to-[#6D28D9]",
-    badge: "Nieuwe premies",
-    enabled: true,
-    component: GenericServiceWizard,
+    component: HeatPumpBoilerWizard,
   },
   {
     id: "airco",
@@ -102,17 +87,7 @@ export const calculatorServices: CalculatorService[] = [
     icon: AirVent,
     accent: "from-[#56C7F0] to-[#2C9BC7]",
     enabled: true,
-    component: GenericServiceWizard,
-  },
-  {
-    id: "premie-berekenen",
-    slug: "premie-berekenen",
-    title: "Premie berekenen",
-    description: "Bereken je Vlaamse premie voor een warmtepomp.",
-    icon: PiggyBank,
-    accent: "from-[#F5A623] to-[#E07B12]",
-    enabled: true,
-    component: GenericServiceWizard,
+    component: AircoWizard,
   },
 ];
 
