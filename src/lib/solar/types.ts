@@ -28,7 +28,7 @@ export type HouseholdAnswers = {
 
 export type RoofType = "pitched" | "flat" | "mixed" | "unknown";
 export type RoofSpace = "small" | "half" | "most" | "full" | "unknown";
-export type ShadeLevel = keyof typeof import("@/config/solarConfig").SHADE_FACTORS;
+export type ShadeLevel = "never" | "partial" | "much" | "unknown";
 export type PhaseType = "mono" | "three" | "unknown";
 export type ExistingIntent = "extend" | "replace" | "battery" | "advice";
 export type BatteryChoice = "yes" | "no" | "advice";
