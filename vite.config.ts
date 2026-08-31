@@ -7,6 +7,11 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
+  nitro: {
+    // Build the SSR handler and public assets in Netlify's expected layout.
+    // Lovable's own LOVABLE_NITRO_PRESET still takes precedence in its builds.
+    preset: "netlify",
+  },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
