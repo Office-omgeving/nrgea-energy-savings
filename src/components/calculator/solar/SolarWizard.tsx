@@ -3,14 +3,13 @@ import {
   BatteryCharging,
   Car,
   Euro,
-  FileText,
   Gauge,
   Home,
   Sun,
 } from "lucide-react";
 
 import type { ServiceComponentProps } from "@/config/calculatorServices";
-import { KWP_PER_PANEL, PANEL_WP, REFERENCE_KWH_PRICE } from "@/config/solarConfig";
+import { PANEL_WP, REFERENCE_KWH_PRICE } from "@/config/solarConfig";
 import { useWizardState } from "@/hooks/useWizardState";
 import {
   accuracyFor,
@@ -1153,5 +1152,3 @@ export function SolarWizard({ service, onBackToOverview }: ServiceComponentProps
     </CalculatorWizardShell>
   );
 }
-
-export const __internal = { KWP_PER_PANEL, FileText };
