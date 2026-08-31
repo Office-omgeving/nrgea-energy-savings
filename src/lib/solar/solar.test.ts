@@ -103,7 +103,7 @@ describe("advies", () => {
     const sunny = recommendPanels({ consumptionKwh: 4000, shade: "never" });
     const shady = recommendPanels({ consumptionKwh: 4000, shade: "much" });
     expect(shady.panels).toBeGreaterThan(sunny.panels);
-    expect(shady.production).toBeLessThan(sunny.panels * 465 * 0.95);
+    expect(shady.shadeFactor).toBeLessThan(sunny.shadeFactor);
   });
 
   it("gebruikt een voorzichtige omvormerlimiet bij onbekende aansluiting", () => {
