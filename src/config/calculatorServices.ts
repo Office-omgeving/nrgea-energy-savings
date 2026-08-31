@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { GenericServiceWizard } from "@/components/calculator/GenericServiceWizard";
+import { SolarWizard } from "@/components/calculator/solar/SolarWizard";
 
 export type ServiceComponentProps = {
   service: CalculatorService;
@@ -46,7 +47,7 @@ export const calculatorServices: CalculatorService[] = [
     icon: Sun,
     accent: "from-[#3FAF7A] to-[#1E8F72]",
     enabled: true,
-    component: GenericServiceWizard,
+    component: SolarWizard,
   },
   {
     id: "thuisbatterij",
