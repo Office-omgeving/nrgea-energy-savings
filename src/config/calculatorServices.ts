@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 import type { LucideIcon } from "lucide-react";
-import { AirVent, BatteryCharging, Droplets, Sun, Thermometer } from "lucide-react";
+import { AirVent, BadgeEuro, BatteryCharging, Droplets, Sun, Thermometer } from "lucide-react";
 
 import {
   AircoWizard,
@@ -9,6 +9,7 @@ import {
   HeatPumpWizard,
 } from "@/components/calculator/services/ServiceWizards";
 import { SolarWizard } from "@/components/calculator/solar/SolarWizard";
+import { PremiumWizard } from "@/components/calculator/premium/PremiumWizard";
 
 export type ServiceComponentProps = {
   service: CalculatorService;
@@ -81,6 +82,16 @@ export const calculatorServices: CalculatorService[] = [
     icon: AirVent,
     enabled: true,
     component: AircoWizard,
+  },
+  {
+    id: "premie",
+    slug: "premie-berekenen",
+    title: "Premie berekenen",
+    description: "Bereken je Vlaamse premie voor een warmtepomp of warmtepompboiler.",
+    icon: BadgeEuro,
+    badge: "Regeling 2026",
+    enabled: true,
+    component: PremiumWizard,
   },
 ];
 
