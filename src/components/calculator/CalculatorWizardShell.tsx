@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { CalculatorBrandBar } from "./CalculatorBrandBar";
 import { WizardStepper } from "./WizardStepper";
 
 export function CalculatorWizardShell({
@@ -19,7 +18,6 @@ export function CalculatorWizardShell({
 }) {
   return (
     <div className="bg-background">
-      <CalculatorBrandBar />
       <header className="bg-forest">
         <div className="mx-auto w-full max-w-[820px] px-5 py-8 md:px-8 md:py-10">
           <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-primary">
