@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { CalculatorBrandBar } from "./CalculatorBrandBar";
 import { WizardStepper } from "./WizardStepper";
 
 export function CalculatorWizardShell({
@@ -18,22 +19,22 @@ export function CalculatorWizardShell({
 }) {
   return (
     <div className="bg-background">
-      <header className="relative isolate overflow-hidden bg-forest">
-        <div className="absolute inset-0 bg-gradient-to-br from-forest via-forest to-forest-surface" />
-        <div className="hex-pattern absolute inset-0 opacity-60" />
-        <div className="absolute -right-20 top-1/2 h-[220px] w-[220px] -translate-y-1/2 rounded-full bg-primary/20 blur-[80px]" />
-        <div className="relative mx-auto w-full max-w-[760px] px-5 py-6 md:px-8">
-          <span className="inline-flex rounded-full bg-white/10 px-3 py-1 text-[11px] font-semibold text-mint">
-            Nrgea simulator
+      <CalculatorBrandBar />
+      <header className="bg-forest">
+        <div className="mx-auto w-full max-w-[820px] px-5 py-8 md:px-8 md:py-10">
+          <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-primary">
+            NRGEA simulator
           </span>
-          <h2 className="mt-3 font-display text-xl font-semibold leading-tight text-white sm:text-2xl">
+          <h2 className="mt-3 font-display text-2xl font-medium leading-tight tracking-tight text-white sm:text-3xl">
             {title}
           </h2>
-          <p className="mt-1.5 max-w-[420px] text-sm text-mint/80">{description}</p>
+          <p className="mt-2 max-w-[560px] text-sm leading-relaxed text-white/65 sm:text-base">
+            {description}
+          </p>
         </div>
       </header>
 
-      <div className="mx-auto w-full max-w-[760px] px-5 py-6 md:px-8">
+      <div className="mx-auto w-full max-w-[820px] px-5 py-8 md:px-8 md:py-10">
         {steps && steps.length > 0 && typeof currentStep === "number" ? (
           <div className="mb-6">
             <WizardStepper steps={steps} current={currentStep} />

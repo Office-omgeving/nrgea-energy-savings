@@ -29,17 +29,18 @@ export function ResultsShell({
 }) {
   return (
     <div className="space-y-5">
-      <h2 className="font-display text-xl font-semibold text-foreground">{title}</h2>
+      <h2 className="font-display text-2xl font-medium tracking-tight text-foreground">{title}</h2>
 
       {price ? (
-        <section className="rounded-xl border border-forest-surface bg-forest px-5 py-5 text-white">
-          <p className="text-sm font-medium text-mint/80">
+        <section className="rounded-2xl bg-forest px-6 py-7 text-white sm:px-8 sm:py-8">
+          <div className="mb-5 h-1 w-14 rounded-full bg-primary" aria-hidden="true" />
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-white/60">
             {price.label ?? "Richtprijs investering"}
           </p>
-          <p className="mt-1 font-display text-4xl font-semibold leading-none tracking-tight">
+          <p className="mt-2 font-display text-4xl font-medium leading-none tracking-[-0.025em] sm:text-5xl">
             {price.value}
           </p>
-          {price.hint ? <p className="mt-2 text-xs text-mint/70">{price.hint}</p> : null}
+          {price.hint ? <p className="mt-3 max-w-xl text-sm text-white/60">{price.hint}</p> : null}
         </section>
       ) : null}
 

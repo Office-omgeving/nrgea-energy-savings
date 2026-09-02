@@ -1,21 +1,22 @@
+import { CalculatorBrandBar } from "./CalculatorBrandBar";
+
 export function CalculatorHero() {
   return (
-    <header className="relative isolate overflow-hidden bg-forest">
-      <div className="absolute inset-0 bg-gradient-to-br from-forest via-forest to-forest-surface" />
-      <div className="hex-pattern absolute inset-0 opacity-70" />
-      <div className="absolute -right-24 top-1/2 h-[320px] w-[320px] -translate-y-1/2 rounded-full bg-primary/25 blur-[90px]" />
-      <div className="absolute -bottom-20 right-24 h-[180px] w-[180px] rounded-full bg-highlight/15 blur-[80px]" />
-
-      <div className="relative mx-auto flex min-h-[170px] w-full max-w-[1100px] flex-col justify-center px-5 py-8 sm:min-h-[190px] md:min-h-[210px] md:px-8 lg:min-h-[230px]">
-        <h1 className="font-display text-[1.6rem] font-semibold leading-[1.15] tracking-tight text-white sm:text-[2rem] lg:text-[2.4rem]">
-          Ontdek je <span className="text-highlight">besparing</span>
-          <br />
-          in enkele klikken.
-        </h1>
-        <p className="mt-3 max-w-[420px] text-sm leading-relaxed text-mint/80">
-          Kies een simulatietool en bereken direct hoeveel je kunt besparen op energie.
-        </p>
-      </div>
-    </header>
+    <>
+      <CalculatorBrandBar />
+      <header className="bg-forest">
+        <div className="mx-auto flex min-h-[190px] w-full max-w-[1100px] flex-col justify-center px-5 py-10 md:min-h-[220px] md:px-8">
+          <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary">
+            Uw persoonlijke energiescan
+          </p>
+          <h1 className="mt-3 max-w-[680px] font-display text-[2rem] font-medium leading-[1.08] tracking-[-0.025em] text-white sm:text-[2.6rem] lg:text-[3rem]">
+            Bereken wat duurzame energie voor u kan betekenen.
+          </h1>
+          <p className="mt-4 max-w-[560px] text-base leading-relaxed text-white/65">
+            Kies een oplossing en ontvang meteen een heldere, persoonlijke indicatie.
+          </p>
+        </div>
+      </header>
+    </>
   );
 }

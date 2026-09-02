@@ -67,7 +67,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-sm font-semibold text-foreground">
+      <label className="mb-1.5 block text-sm font-medium text-foreground">
         {label}
         {required ? " *" : ""}
       </label>
@@ -76,7 +76,7 @@ function Field({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         aria-invalid={!!error}
-        className="h-12 w-full rounded-xl border border-input bg-card px-4 text-sm text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-ring/40"
+        className="h-12 w-full rounded-xl border border-input bg-input-background px-4 text-sm text-foreground outline-none transition-colors focus:border-primary focus:bg-card focus:ring-2 focus:ring-ring/30"
       />
       {error ? <p className="mt-1 text-xs font-medium text-destructive">{error}</p> : null}
     </div>
@@ -169,14 +169,14 @@ export function ContactForm({
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-semibold text-foreground">
+        <label className="mb-1.5 block text-sm font-medium text-foreground">
           Bericht (optioneel)
         </label>
         <textarea
           value={values.message}
           onChange={(event) => set("message", event.target.value)}
           rows={3}
-          className="w-full rounded-xl border border-input bg-card px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-ring/40"
+          className="w-full rounded-xl border border-input bg-input-background px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-primary focus:bg-card focus:ring-2 focus:ring-ring/30"
         />
       </div>
 

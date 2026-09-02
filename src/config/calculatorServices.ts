@@ -22,8 +22,6 @@ export type CalculatorService = {
   subtitle?: string;
   description: string;
   icon: LucideIcon;
-  /** Tailwind gradient classes voor het icoonblok. */
-  accent: string;
   badge?: string;
   enabled: boolean;
   component: ComponentType<ServiceComponentProps>;
@@ -40,9 +38,8 @@ export const calculatorServices: CalculatorService[] = [
     slug: "zonnepanelen",
     title: "Zonnepanelen",
     subtitle: "+ batterij optioneel",
-    description: "Bespaar op je energiefactuur met zonnepanelen.",
+    description: "Bespaar op uw energiefactuur met zonnepanelen.",
     icon: Sun,
-    accent: "from-[#3FAF7A] to-[#1E8F72]",
     enabled: true,
     component: SolarWizard,
   },
@@ -52,7 +49,6 @@ export const calculatorServices: CalculatorService[] = [
     title: "Thuisbatterij",
     description: "Optimaliseer eigen verbruik van bestaande zonnepanelen.",
     icon: BatteryCharging,
-    accent: "from-[#2F80ED] to-[#1B5FBF]",
     enabled: true,
     component: BatteryWizard,
   },
@@ -60,9 +56,8 @@ export const calculatorServices: CalculatorService[] = [
     id: "lucht-water-warmtepomp",
     slug: "lucht-waterwarmtepomp",
     title: "Lucht-waterwarmtepomp",
-    description: "Vervang je gasketel door een lucht-waterwarmtepomp.",
+    description: "Vervang uw gasketel door een lucht-waterwarmtepomp.",
     icon: Thermometer,
-    accent: "from-[#F2745C] to-[#D4453A]",
     badge: "Nieuwe premies",
     enabled: true,
     component: HeatPumpWizard,
@@ -71,9 +66,8 @@ export const calculatorServices: CalculatorService[] = [
     id: "warmtepompboiler",
     slug: "warmtepompboiler",
     title: "Warmtepompboiler",
-    description: "Energiezuinig warm water voor je woning.",
+    description: "Energiezuinig warm water voor uw woning.",
     icon: Droplets,
-    accent: "from-[#6B8CF2] to-[#7A5AF0]",
     badge: "Nieuwe premies",
     enabled: true,
     component: HeatPumpBoilerWizard,
@@ -85,7 +79,6 @@ export const calculatorServices: CalculatorService[] = [
     subtitle: "Koelen en verwarmen",
     description: "Vraag een vrijblijvend advies aan voor airco.",
     icon: AirVent,
-    accent: "from-[#56C7F0] to-[#2C9BC7]",
     enabled: true,
     component: AircoWizard,
   },

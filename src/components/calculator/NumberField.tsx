@@ -27,7 +27,7 @@ export function NumberField({
 
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-sm font-semibold text-foreground">
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-foreground">
         {label}
       </label>
       <div className="relative">
@@ -45,7 +45,7 @@ export function NumberField({
             onChange(raw === "" ? "" : Number(raw));
           }}
           aria-invalid={!!error}
-          className="h-12 w-full rounded-xl border border-input bg-card px-4 pr-14 text-sm text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-ring/40"
+          className="h-12 w-full rounded-xl border border-input bg-input-background px-4 pr-14 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-primary focus:bg-card focus:ring-2 focus:ring-ring/30"
         />
         {unit ? (
           <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
