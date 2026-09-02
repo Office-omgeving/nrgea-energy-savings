@@ -54,7 +54,9 @@ export function NumberField({
         ) : null}
       </div>
       {error ? (
-        <p className="mt-1 text-xs font-medium text-destructive">{error}</p>
+        <p role="alert" className="mt-1 text-xs font-medium text-destructive">
+          {error}
+        </p>
       ) : hint ? (
         <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
       ) : null}

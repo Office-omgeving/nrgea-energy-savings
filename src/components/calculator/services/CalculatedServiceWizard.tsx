@@ -13,6 +13,7 @@ import { ResultsShell } from "../ResultsShell";
 import { ScenarioOverview, type ScenarioItem } from "../ScenarioOverview";
 import { KpiCard } from "../KpiCard";
 import { WizardNavigation } from "../WizardNavigation";
+import { getQuestionError } from "./questionValidation";
 
 export type WizardAnswers = Record<string, string | number>;
 
@@ -64,16 +65,6 @@ export type CalculatedServiceConfig = {
   calculate: (answers: WizardAnswers) => ServiceEstimate;
 };
 
-function hasAnswer(question: WizardQuestion, answers: WizardAnswers) {
-  if (question.required === false) return true;
-  const value = answers[question.key];
-  if (value === "" || value === undefined) return false;
-  if (question.kind === "number") {
-    return typeof value === "number" && value >= question.min && value <= question.max;
-  }
-  return typeof value === "string";
-}
-
 function isVisible(question: WizardQuestion, answers: WizardAnswers) {
   if (!question.showWhen) return true;
   const current = answers[question.showWhen.key];
@@ -101,6 +92,7 @@ export function CalculatedServiceWizard({
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [lead, setLead] = useState<ContactFormValues | null>(null);
+  const [questionErrors, setQuestionErrors] = useState<Record<string, string>>({});
 
   const questionCount = config.steps.length;
   const overviewStep = questionCount;
@@ -114,9 +106,37 @@ export function CalculatedServiceWizard({
   ];
 
   const goto = (next: number) => {
+    setQuestionErrors({});
     setStep(next);
     window.scrollTo({ top: 0, behavior: "auto" });
     requestAnimationFrame(measureAndPost);
+  };
+
+  const clearQuestionError = (key: string) => {
+    setQuestionErrors((current) => {
+      if (!current[key]) return current;
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
+  };
+
+  const continueFromQuestionStep = (questionStep: WizardQuestionStep, index: number) => {
+    const errors = questionStep.questions
+      .filter((question) => isVisible(question, state))
+      .reduce<Record<string, string>>((result, question) => {
+        const error = getQuestionError(question, state);
+        if (error) result[question.key] = error;
+        return result;
+      }, {});
+
+    if (Object.keys(errors).length > 0) {
+      setQuestionErrors(errors);
+      requestAnimationFrame(measureAndPost);
+      return;
+    }
+
+    goto(index + 1);
   };
 
   const reviewItems = useMemo(
@@ -144,37 +164,45 @@ export function CalculatedServiceWizard({
         .filter((question) => isVisible(question, state))
         .map((question) =>
           question.kind === "choice" ? (
-            <RadioCards
-              key={question.key}
-              legend={question.label}
-              value={typeof state[question.key] === "string" ? String(state[question.key]) : ""}
-              onChange={(value) => update({ [question.key]: value })}
-              columns={question.columns ?? 2}
-              options={question.options}
-            />
+            <div key={question.key}>
+              <RadioCards
+                legend={question.label}
+                value={typeof state[question.key] === "string" ? String(state[question.key]) : ""}
+                onChange={(value) => {
+                  update({ [question.key]: value });
+                  clearQuestionError(question.key);
+                }}
+                columns={question.columns ?? 2}
+                options={question.options}
+              />
+              {questionErrors[question.key] ? (
+                <p role="alert" className="mt-1 text-xs font-medium text-destructive">
+                  {questionErrors[question.key]}
+                </p>
+              ) : null}
+            </div>
           ) : (
             <NumberField
               key={question.key}
               label={question.label}
               value={typeof state[question.key] === "number" ? state[question.key] : ""}
-              onChange={(value) => update({ [question.key]: value })}
+              onChange={(value) => {
+                update({ [question.key]: value });
+                clearQuestionError(question.key);
+              }}
               unit={question.unit}
               min={question.min}
               max={question.max}
               step={question.step ?? 1}
               hint={question.hint}
+              error={questionErrors[question.key]}
             />
           ),
         )}
 
       <WizardNavigation
         onPrev={index === 0 ? onBackToOverview : () => goto(index - 1)}
-        onNext={() => goto(index + 1)}
-        nextDisabled={
-          !questionStep.questions
-            .filter((question) => isVisible(question, state))
-            .every((question) => hasAnswer(question, state))
-        }
+        onNext={() => continueFromQuestionStep(questionStep, index)}
       />
     </div>
   );
