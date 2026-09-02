@@ -86,9 +86,12 @@
   #root {
     margin: 0;
     padding: 0;
+    width: 100%;
+    max-width: 100%;
     height: auto;
     min-height: 0;
-    overflow-x: hidden;
+    min-width: 0;
+    overflow-x: clip;
     background-color: var(--color-background);
   }
 
@@ -96,6 +99,7 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    touch-action: pan-y pinch-zoom;
   }
 
   h1,
@@ -105,5 +109,15 @@
   label,
   button {
     font-weight: 500;
+  }
+}
+
+/* iOS zoomt automatisch in bij focus op formuliervelden kleiner dan 16px. */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    max-width: 100%;
+    font-size: 16px;
   }
 }

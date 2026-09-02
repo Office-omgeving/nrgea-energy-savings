@@ -48,7 +48,10 @@ export function EmbedApp() {
   const ServiceComponent = service?.component;
 
   return (
-    <div id="nrgea-calculator-root" className="w-full overflow-x-hidden bg-background">
+    <div
+      id="nrgea-calculator-root"
+      className="w-full min-w-0 max-w-full overflow-x-clip bg-background"
+    >
       <IframeResizeReporter watch={slug} />
 
       {service && ServiceComponent ? (
