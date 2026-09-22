@@ -18,21 +18,12 @@ export function CalculatorWizardShell({
 }) {
   return (
     <div className="bg-background">
-      <header className="bg-forest">
-        <div className="mx-auto w-full max-w-[820px] px-5 py-8 md:px-8 md:py-10">
-          <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-primary">
-            NRGEA simulator
-          </span>
-          <h2 className="mt-3 font-display text-2xl font-medium leading-tight tracking-tight text-white sm:text-3xl">
-            {title}
-          </h2>
-          <p className="mt-2 max-w-[560px] text-sm leading-relaxed text-white/65 sm:text-base">
-            {description}
-          </p>
-        </div>
+      <header className="sr-only">
+        <h2>{title}</h2>
+        <p>{description}</p>
       </header>
 
-      <div className="mx-auto w-full max-w-[820px] px-5 py-8 md:px-8 md:py-10">
+      <div className="mx-auto w-full max-w-[820px] px-6 py-12 md:px-12 md:py-20">
         {steps && steps.length > 0 && typeof currentStep === "number" ? (
           <div className="mb-6">
             <WizardStepper steps={steps} current={currentStep} />
