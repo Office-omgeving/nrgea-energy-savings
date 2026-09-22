@@ -8,7 +8,7 @@ export function CalculatorServiceGrid({ onOpen }: { onOpen: (slug: string) => vo
 
   return (
     <section className="bg-background">
-      <div className="mx-auto w-full max-w-[1100px] px-6 py-12 md:px-12 md:py-20">
+      <div className="mx-auto w-full max-w-[1100px] px-6 pt-24 pb-12 md:px-12 md:pt-32 md:pb-20">
         <div className="mb-7 max-w-[620px]">
           <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary">
             Onze oplossingen
