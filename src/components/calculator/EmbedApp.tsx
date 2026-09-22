@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { findServiceBySlug } from "@/config/calculatorServices";
-import { CalculatorHero } from "./CalculatorHero";
 import { CalculatorServiceGrid } from "./CalculatorServiceGrid";
 import { IframeResizeReporter, measureAndPost } from "./IframeResizeReporter";
 
@@ -57,10 +56,7 @@ export function EmbedApp() {
       {service && ServiceComponent ? (
         <ServiceComponent service={service} onBackToOverview={backToOverview} />
       ) : (
-        <>
-          <CalculatorHero />
-          <CalculatorServiceGrid onOpen={openService} />
-        </>
+        <CalculatorServiceGrid onOpen={openService} />
       )}
     </div>
   );
