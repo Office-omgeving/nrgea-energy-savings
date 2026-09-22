@@ -23,7 +23,7 @@ export function CalculatorWizardShell({
         <p>{description}</p>
       </header>
 
-      <div className="mx-auto w-full max-w-[820px] px-6 py-12 md:px-12 md:py-20">
+      <div className="mx-auto w-full max-w-[820px] px-6 pt-24 pb-12 md:px-12 md:pt-32 md:pb-20">
         {steps && steps.length > 0 && typeof currentStep === "number" ? (
           <div className="mb-6">
             <WizardStepper steps={steps} current={currentStep} />
