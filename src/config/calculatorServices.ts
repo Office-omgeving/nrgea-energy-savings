@@ -4,10 +4,10 @@ import { AirVent, BadgeEuro, BatteryCharging, Droplets, Sun, Thermometer } from 
 
 import {
   AircoWizard,
-  BatteryWizard,
   HeatPumpBoilerWizard,
   HeatPumpWizard,
 } from "@/components/calculator/services/ServiceWizards";
+import { HomeBatteryWizard } from "@/components/calculator/battery/HomeBatteryWizard";
 import { SolarWizard } from "@/components/calculator/solar/SolarWizard";
 import { PremiumWizard } from "@/components/calculator/premium/PremiumWizard";
 
@@ -45,13 +45,13 @@ export const calculatorServices: CalculatorService[] = [
     component: SolarWizard,
   },
   {
-    id: "thuisbatterij",
+    id: "home-battery",
     slug: "thuisbatterij",
     title: "Thuisbatterij",
     description: "Optimaliseer eigen verbruik van bestaande zonnepanelen.",
     icon: BatteryCharging,
     enabled: true,
-    component: BatteryWizard,
+    component: HomeBatteryWizard,
   },
   {
     id: "lucht-water-warmtepomp",
