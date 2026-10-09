@@ -141,16 +141,15 @@ export const INVERTER_TEXT: Record<InverterCheck, string> = {
 /* ------------------------------------------------------------ capaciteit */
 
 export function roundCapacity(value: number): number {
-  const caps = BATTERY_CONFIG.capacities;
-  let best = caps[0]!;
   const caps: readonly number[] = BATTERY_CONFIG.capacities;
-  const i = caps.indexOf(roundCapacity(capacity));
+  let best = caps[0]!;
+  for (const c of caps) if (Math.abs(c - value) < Math.abs(best - value)) best = c;
   return best;
 }
 
 export function stepUp(capacity: number): number {
-  const caps = BATTERY_CONFIG.capacities;
-  const i = caps.indexOf(roundCapacity(capacity) as (typeof caps)[number]);
+  const caps: readonly number[] = BATTERY_CONFIG.capacities;
+  const i = caps.indexOf(roundCapacity(capacity));
   return caps[Math.min(caps.length - 1, i + 1)]!;
 }
 
