@@ -421,7 +421,7 @@ export function PremiumWizard({ service, onBackToOverview }: ServiceComponentPro
                   value={`${Math.round(calculation.maxPercentage * 100)}%`}
                   hint="Van de nettofactuur excl. btw"
                 />
-                <KpiCard label="Inkomenscategorie" value={categoryLabel.split(" — ")[0]} />
+                <KpiCard label="Inkomenscategorie" value={categoryLabel.split(" — ")[0] ?? categoryLabel} />
               </>
             ) : undefined
           }
