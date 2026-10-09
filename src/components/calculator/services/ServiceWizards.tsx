@@ -226,8 +226,8 @@ const batteryConfig: CalculatedServiceConfig = {
     const estimatedProfile = estimateBatteryEnergyProfile({
       persons: number(answers, "persons", 2),
       panels: number(answers, "panels", 10),
-      majorUsage: text(answers, "majorUsage", "standard" as string),
-      usageProfile: text(answers, "usageProfile", "mixed" as string),
+      majorUsage: text(answers, "majorUsage", "standard"),
+      usageProfile: text(answers, "usageProfile", "mixed"),
     });
     const usesEstimate = text(answers, "energyMethod", "estimate" as string) === "estimate";
     const annualConsumption = usesEstimate
@@ -243,8 +243,8 @@ const batteryConfig: CalculatedServiceConfig = {
       annualConsumption,
       solarProduction,
       annualExport,
-      usageProfile: text(answers, "usageProfile", "mixed" as string),
-      goal: text(answers, "goal", "savings" as string),
+      usageProfile: text(answers, "usageProfile", "mixed"),
+      goal: text(answers, "goal", "savings"),
       smartControl: text(answers, "smartControl", "no" as string) === "yes",
       electricityPrice: number(answers, "electricityPrice", 0.33),
       injectionPrice: number(answers, "injectionPrice", 0.05),
@@ -419,10 +419,10 @@ const heatPumpConfig: CalculatedServiceConfig = {
     const result = calculateHeatPump({
       homeArea: number(answers, "homeArea"),
       annualHeatingCost: number(answers, "annualHeatingCost"),
-      homeType: text(answers, "homeType", "row" as string),
-      insulation: text(answers, "insulation", "average" as string),
-      emitters: text(answers, "emitters", "low-temp" as string),
-      currentHeating: text(answers, "currentHeating", "gas" as string),
+      homeType: text(answers, "homeType", "row"),
+      insulation: text(answers, "insulation", "average"),
+      emitters: text(answers, "emitters", "low-temp"),
+      currentHeating: text(answers, "currentHeating", "gas"),
       hotWater: text(answers, "hotWater", "no" as string) === "yes",
       electricityPrice: number(answers, "electricityPrice", 0.33),
     });
@@ -557,10 +557,10 @@ const heatPumpBoilerConfig: CalculatedServiceConfig = {
   calculate: (answers) => {
     const result = calculateHeatPumpBoiler({
       persons: number(answers, "persons"),
-      currentHeating: text(answers, "currentHeating", "electric" as string),
-      installationRoom: text(answers, "installationRoom", "utility" as string),
+      currentHeating: text(answers, "currentHeating", "electric"),
+      installationRoom: text(answers, "installationRoom", "utility"),
       existingSolar: text(answers, "existingSolar", "no" as string) === "yes",
-      showerProfile: text(answers, "showerProfile", "average" as string),
+      showerProfile: text(answers, "showerProfile", "average"),
       electricityPrice: number(answers, "electricityPrice", 0.33),
     });
     return {
@@ -759,9 +759,9 @@ const aircoConfig: CalculatedServiceConfig = {
       rooms,
       totalArea,
       goal,
-      insulation: text(answers, "insulation", "average" as string),
-      sunExposure: text(answers, "sunExposure", "average" as string),
-      currentHeating: text(answers, "currentHeating", "gas" as string),
+      insulation: text(answers, "insulation", "average"),
+      sunExposure: text(answers, "sunExposure", "average"),
+      currentHeating: text(answers, "currentHeating", "gas"),
       electricityPrice: number(answers, "electricityPrice", 0.33),
     });
     const heatingRelevant = goal !== "cool";

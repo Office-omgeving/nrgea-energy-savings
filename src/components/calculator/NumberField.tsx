@@ -15,13 +15,13 @@ export function NumberField({
   label: string;
   value: number | "";
   onChange: (value: number | "") => void;
-  unit?: string;
-  min?: number;
-  max?: number;
-  step?: number;
-  hint?: string;
-  error?: string;
-  placeholder?: string;
+  unit?: string | undefined;
+  min?: number | undefined;
+  max?: number | undefined;
+  step?: number | undefined;
+  hint?: string | undefined;
+  error?: string | undefined;
+  placeholder?: string | undefined;
 }) {
   const id = useId();
 
