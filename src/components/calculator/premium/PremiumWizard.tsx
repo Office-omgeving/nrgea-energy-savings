@@ -182,7 +182,7 @@ export function PremiumWizard({ service, onBackToOverview }: ServiceComponentPro
             label: "Personen ten laste",
             value: dependents === 4 ? "4 of meer" : String(dependents),
           },
-          { label: "Inkomenscategorie", value: categoryLabel.split(" — ")[0] },
+          { label: "Inkomenscategorie", value: categoryLabel.split(" — ")[0] ?? categoryLabel },
         ]
       : []),
   ];
