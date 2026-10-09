@@ -185,7 +185,7 @@ export function CalculatedServiceWizard({
             <NumberField
               key={question.key}
               label={question.label}
-              value={typeof state[question.key] === "number" ? state[question.key] : ""}
+              value={typeof state[question.key] === "number" ? (state[question.key] as number) : ""}
               onChange={(value) => {
                 update({ [question.key]: value });
                 clearQuestionError(question.key);
