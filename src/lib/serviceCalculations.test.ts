@@ -3,9 +3,11 @@ import { describe, expect, it } from "vitest";
 import {
   calculateAirco,
   calculateBattery,
+  calculateFacadeInsulation,
   calculateHeatPump,
   calculateHeatPumpBoiler,
   estimateBatteryEnergyProfile,
+  estimateFacadeArea,
 } from "./serviceCalculations";
 
 describe("thuisbatterij", () => {
@@ -109,5 +111,64 @@ describe("airco", () => {
 
     expect(demanding.capacity).toBeGreaterThan(efficient.capacity);
     expect(demanding.investment).toBeGreaterThan(efficient.investment);
+  });
+});
+
+describe("gevelisolatie", () => {
+  const baseInput = {
+    surfaceMethod: "estimate" as const,
+    homeType: "semi" as const,
+    facades: 3,
+    floors: 2,
+    wallType: "cavity" as const,
+    currentInsulation: "none" as const,
+    preferredMethod: "advice" as const,
+    finish: "render" as const,
+    heating: "gas" as const,
+    buildingAge: "pre-2006" as const,
+    applicant: "owner-occupant" as const,
+    incomeCategory: "category-3" as const,
+    contractor: "yes" as const,
+    wallCondition: "good" as const,
+  };
+
+  it("raamt de oppervlakte met gewone woninggegevens", () => {
+    const area = estimateFacadeArea({ homeType: "row", facades: 2, floors: 2 });
+
+    expect(area).toBeGreaterThan(40);
+    expect(area).toBeLessThan(70);
+  });
+
+  it("kiest bij een spouwmuur een passend startscenario", () => {
+    const result = calculateFacadeInsulation(baseInput);
+
+    expect(result.method).toBe("cavity");
+    expect(result.investmentHigh).toBeGreaterThan(result.investmentLow);
+    expect(result.annualSavingsHigh).toBeGreaterThan(result.annualSavingsLow);
+  });
+
+  it("begrenst de premie voor inkomenscategorie 3", () => {
+    const result = calculateFacadeInsulation({
+      ...baseInput,
+      surfaceMethod: "exact",
+      facadeArea: 300,
+      wallType: "solid",
+      preferredMethod: "exterior",
+    });
+
+    expect(result.premiumStatus).toBe("eligible");
+    expect(result.premium).toBe(3500);
+  });
+
+  it("belooft geen premie als de gebruiker de voorwaarden niet kent", () => {
+    const result = calculateFacadeInsulation({
+      ...baseInput,
+      buildingAge: "unknown",
+      incomeCategory: "unknown",
+      contractor: "unknown",
+    });
+
+    expect(result.premiumStatus).toBe("unknown");
+    expect(result.premium).toBe(0);
   });
 });

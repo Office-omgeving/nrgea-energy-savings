@@ -63,6 +63,8 @@ export type CalculatedServiceConfig = {
   steps: WizardQuestionStep[];
   initial: WizardAnswers;
   calculate: (answers: WizardAnswers) => ServiceEstimate;
+  skipContact?: boolean;
+  resultVariant?: "default" | "facade";
 };
 
 function isVisible(question: WizardQuestion, answers: WizardAnswers) {
@@ -97,11 +99,11 @@ export function CalculatedServiceWizard({
   const questionCount = config.steps.length;
   const overviewStep = questionCount;
   const contactStep = questionCount + 1;
-  const resultStep = questionCount + 2;
+  const resultStep = config.skipContact ? questionCount + 1 : questionCount + 2;
   const stepLabels = [
     ...config.steps.map((item) => item.title),
     "Overzicht",
-    "Gegevens",
+    ...(config.skipContact ? [] : ["Gegevens"]),
     "Resultaat",
   ];
 
@@ -214,6 +216,7 @@ export function CalculatedServiceWizard({
       steps={stepLabels}
       currentStep={step}
       onBackToOverview={onBackToOverview}
+      showBackToOverview={!(config.resultVariant === "facade" && step === resultStep)}
     >
       {config.steps.map((questionStep, index) =>
         step === index ? (
@@ -238,13 +241,13 @@ export function CalculatedServiceWizard({
           </InfoNotice>
           <WizardNavigation
             onPrev={() => goto(overviewStep - 1)}
-            onNext={() => goto(contactStep)}
-            nextLabel="Naar mijn gegevens"
+            onNext={() => goto(config.skipContact ? resultStep : contactStep)}
+            nextLabel={config.skipContact ? "Bekijk mijn prijsvork" : "Naar mijn gegevens"}
           />
         </div>
       ) : null}
 
-      {step === contactStep ? (
+      {!config.skipContact && step === contactStep ? (
         <div className="space-y-4">
           <ContactForm
             submitting={submitting}
@@ -272,8 +275,14 @@ export function CalculatedServiceWizard({
 
       {step === resultStep ? (
         <ResultsShell
+          variant={config.resultVariant ?? "default"}
           price={estimate.price}
-          scenario={[...reviewItems, ...(estimate.scenario ?? [])]}
+          scenario={
+            config.resultVariant === "facade"
+              ? estimate.scenario
+              : [...reviewItems, ...(estimate.scenario ?? [])]
+          }
+          scenarioDetails={config.resultVariant === "facade" ? reviewItems : undefined}
           summary={
             <InfoNotice>
               {estimate.summary}
@@ -285,7 +294,7 @@ export function CalculatedServiceWizard({
           kpis={
             <>
               {estimate.kpis.map((kpi) => (
-                <KpiCard key={kpi.label} {...kpi} />
+                <KpiCard key={kpi.label} {...kpi} compact={config.resultVariant === "facade"} />
               ))}
             </>
           }

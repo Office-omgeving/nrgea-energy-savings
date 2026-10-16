@@ -1,16 +1,10 @@
 import { cn } from "@/lib/utils";
 
-export function WizardStepper({
-  steps,
-  current,
-}: {
-  steps: string[];
-  current: number;
-}) {
+export function WizardStepper({ steps, current }: { steps: string[]; current: number }) {
   return (
     <nav aria-label="Voortgang" className="w-full">
       {/* Desktop / tablet */}
-      <ol className="hidden items-center gap-2 sm:flex">
+      <ol className="hidden items-center gap-2 md:flex">
         {steps.map((step, index) => {
           const state = index === current ? "current" : index < current ? "done" : "todo";
           return (
@@ -42,7 +36,7 @@ export function WizardStepper({
       </ol>
 
       {/* Mobiel: compacte stepper zonder overflow */}
-      <div className="sm:hidden">
+      <div className="md:hidden">
         <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
           <span className="text-foreground">{steps[current]}</span>
           <span>

@@ -2,6 +2,7 @@ import type { ServiceComponentProps } from "@/config/calculatorServices";
 import {
   calculateAirco,
   calculateBattery,
+  calculateFacadeInsulation,
   calculateHeatPump,
   calculateHeatPumpBoiler,
   estimateBatteryEnergyProfile,
@@ -801,6 +802,379 @@ const aircoConfig: CalculatedServiceConfig = {
   },
 };
 
+const facadeInsulationConfig: CalculatedServiceConfig = {
+  description:
+    "Schat de geschikte isolatiemethode, investering, energiebesparing en mogelijke Vlaamse premie.",
+  skipContact: true,
+  resultVariant: "facade",
+  initial: {
+    buildingAge: "",
+    homeType: "",
+    heating: "",
+    wallType: "",
+    currentInsulation: "",
+    wallCondition: "",
+    surfaceMethod: "",
+    facadeArea: "",
+    facades: "",
+    floors: "",
+    preferredMethod: "",
+    finish: "render",
+    applicant: "",
+    incomeCategory: "",
+    contractor: "",
+  },
+  steps: [
+    {
+      title: "Woning en gevel",
+      description: "Kies wat je weet. Bij twijfel kun je telkens ‘Ik weet het niet’ aanduiden.",
+      questions: [
+        {
+          kind: "choice",
+          key: "buildingAge",
+          label: "Van wanneer is de woning?",
+          columns: 3,
+          options: [
+            {
+              value: "pre-2006",
+              label: "Vóór 2006",
+              description: "De woning is aangesloten of vergund vóór 2006.",
+            },
+            {
+              value: "post-2005",
+              label: "Vanaf 2006",
+              description: "De woning is recenter gebouwd.",
+            },
+            {
+              value: "unknown",
+              label: "Ik weet het niet",
+              description: "We houden de premie als te controleren punt.",
+            },
+          ],
+        },
+        {
+          kind: "choice",
+          key: "homeType",
+          label: "Welk type woning is het?",
+          options: [
+            { value: "apartment", label: "Appartement", description: "Een woning in een gebouw." },
+            { value: "row", label: "Rijwoning", description: "Aan beide kanten aangebouwd." },
+            { value: "semi", label: "Halfopen", description: "Aan één kant aangebouwd." },
+            { value: "detached", label: "Open bebouwing", description: "Vrijstaand gebouw." },
+          ],
+        },
+        {
+          kind: "choice",
+          key: "heating",
+          label: "Waarmee verwarm je vooral?",
+          options: [
+            { value: "gas", label: "Aardgas", description: "Centrale verwarming op gas." },
+            { value: "oil", label: "Stookolie", description: "Centrale verwarming op mazout." },
+            { value: "electric", label: "Elektrisch", description: "Rechtstreeks elektrisch." },
+            { value: "heat-pump", label: "Warmtepomp", description: "Volledig of hoofdzakelijk." },
+            {
+              value: "other",
+              label: "Andere / onbekend",
+              description: "Hout, pellets of niet zeker.",
+            },
+          ],
+        },
+        {
+          kind: "choice",
+          key: "wallType",
+          label: "Weet je hoe de buitenmuur is opgebouwd?",
+          columns: 3,
+          options: [
+            {
+              value: "cavity",
+              label: "Muur met spouw",
+              description: "Er zit een open ruimte tussen binnen- en buitenmuur.",
+            },
+            {
+              value: "solid",
+              label: "Volle muur",
+              description: "Een massieve muur zonder spouw.",
+            },
+            {
+              value: "unknown",
+              label: "Ik weet het niet",
+              description: "Een plaatsbezoek kan dit vaststellen.",
+            },
+          ],
+        },
+        {
+          kind: "choice",
+          key: "currentInsulation",
+          label: "Is de gevel momenteel geïsoleerd?",
+          options: [
+            { value: "none", label: "Nee", description: "Voor zover je weet is er geen isolatie." },
+            { value: "limited", label: "Een beetje", description: "Oude of dunne isolatie." },
+            { value: "good", label: "Ja, goed", description: "Recente of grondige gevelisolatie." },
+            {
+              value: "unknown",
+              label: "Ik weet het niet",
+              description: "We gebruiken een voorzichtige raming.",
+            },
+          ],
+        },
+        {
+          kind: "choice",
+          key: "wallCondition",
+          label: "Zie je vocht, scheuren of loszittende gevelafwerking?",
+          options: [
+            { value: "good", label: "Nee", description: "De gevel oogt in goede staat." },
+            {
+              value: "repairs",
+              label: "Kleine herstellingen",
+              description: "Plaatselijk voeg- of herstelwerk.",
+            },
+            {
+              value: "moisture",
+              label: "Vocht of grotere schade",
+              description: "Eerst technisch laten onderzoeken.",
+            },
+            {
+              value: "unknown",
+              label: "Ik weet het niet",
+              description: "Nrgea controleert dit ter plaatse.",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      title: "Oppervlakte en aanpak",
+      description: "Gebruik een gekende oppervlakte of laat ons ramen op basis van je woning.",
+      questions: [
+        {
+          kind: "choice",
+          key: "surfaceMethod",
+          label: "Hoe wil je de geveloppervlakte bepalen?",
+          options: [
+            {
+              value: "exact",
+              label: "Ik ken de bruto oppervlakte",
+              description: "Bijvoorbeeld uit een offerte, meetstaat of bouwplan.",
+            },
+            {
+              value: "estimate",
+              label: "Maak een schatting",
+              description: "Op basis van het aantal gevels en bouwlagen.",
+            },
+          ],
+        },
+        {
+          kind: "number",
+          key: "facadeArea",
+          label: "Bruto geveloppervlakte",
+          unit: "m²",
+          hint: "Ramen en deuren mogen inbegrepen zijn; de calculator trekt ze indicatief af.",
+          min: 10,
+          max: 600,
+          showWhen: { key: "surfaceMethod", value: "exact" },
+        },
+        {
+          kind: "number",
+          key: "facades",
+          label: "Hoeveel gevelzijden wil je isoleren?",
+          unit: "gevels",
+          hint: "Voor- en achtergevel zijn samen twee gevelzijden.",
+          min: 1,
+          max: 4,
+          showWhen: { key: "surfaceMethod", value: "estimate" },
+        },
+        {
+          kind: "number",
+          key: "floors",
+          label: "Hoeveel bovengrondse bouwlagen heeft de woning?",
+          unit: "bouwlagen",
+          hint: "Tel het gelijkvloers mee. Een niet-bewoonde zolder telt niet mee.",
+          min: 1,
+          max: 4,
+          showWhen: { key: "surfaceMethod", value: "estimate" },
+        },
+        {
+          kind: "choice",
+          key: "preferredMethod",
+          label: "Heb je al een voorkeur voor de isolatiemethode?",
+          options: [
+            {
+              value: "advice",
+              label: "Nee, geef advies",
+              description: "We kiezen een logisch startscenario.",
+            },
+            {
+              value: "cavity",
+              label: "Spouwmuurisolatie",
+              description: "De bestaande spouw wordt opgevuld.",
+            },
+            {
+              value: "exterior",
+              label: "Buitenisolatie",
+              description: "Isolatie en afwerking aan de buitenzijde.",
+            },
+            {
+              value: "interior",
+              label: "Binnenisolatie",
+              description: "Isolatie tegen de binnenkant van de gevel.",
+            },
+          ],
+        },
+        {
+          kind: "choice",
+          key: "finish",
+          label: "Welke buitenafwerking verkies je?",
+          showWhen: { key: "preferredMethod", value: "exterior" },
+          options: [
+            { value: "render", label: "Crepi", description: "Gepleisterde gevelafwerking." },
+            {
+              value: "brick",
+              label: "Gevelsteen",
+              description: "Nieuwe steenstrips of gevelsteen.",
+            },
+            {
+              value: "cladding",
+              label: "Gevelbekleding",
+              description: "Hout, composiet of platen.",
+            },
+            { value: "keep", label: "Nog te bepalen", description: "Gebruik een neutrale raming." },
+          ],
+        },
+      ],
+    },
+    {
+      title: "Premiecheck",
+      description:
+        "Beantwoord alleen wat je weet. Onzekere punten blijven zichtbaar in het resultaat.",
+      questions: [
+        {
+          kind: "choice",
+          key: "applicant",
+          label: "Wat is je situatie voor deze woning?",
+          options: [
+            {
+              value: "owner-occupant",
+              label: "Eigenaar-bewoner",
+              description: "Je bezit en bewoont de woning.",
+            },
+            {
+              value: "social-landlord",
+              label: "Sociale verhuur",
+              description: "Verhuur via een woonmaatschappij.",
+            },
+            {
+              value: "landlord",
+              label: "Andere verhuurder",
+              description: "Je verhuurt of investeert in de woning.",
+            },
+            {
+              value: "renter",
+              label: "Huurder",
+              description: "Je bent geen eigenaar van de woning.",
+            },
+          ],
+        },
+        {
+          kind: "choice",
+          key: "incomeCategory",
+          label: "Ken je je inkomenscategorie voor Mijn VerbouwPremie?",
+          options: [
+            {
+              value: "category-4",
+              label: "Categorie 4",
+              description: "Laagste inkomenscategorie.",
+            },
+            {
+              value: "category-3",
+              label: "Categorie 3",
+              description: "Tweede laagste inkomenscategorie.",
+            },
+            {
+              value: "category-1-2",
+              label: "Categorie 1 of 2",
+              description: "Hogere inkomenscategorieën.",
+            },
+            {
+              value: "unknown",
+              label: "Ik weet het niet",
+              description: "We tonen welke controle nog nodig is.",
+            },
+          ],
+        },
+        {
+          kind: "choice",
+          key: "contractor",
+          label: "Worden de werken door een aannemer uitgevoerd?",
+          columns: 3,
+          options: [
+            { value: "yes", label: "Ja", description: "Een aannemer voert de werken uit." },
+            { value: "no", label: "Nee", description: "Je plant de werken zelf uit te voeren." },
+            {
+              value: "unknown",
+              label: "Nog niet beslist",
+              description: "We houden dit als aandachtspunt.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  calculate: (answers) => {
+    const result = calculateFacadeInsulation({
+      surfaceMethod: text(answers, "surfaceMethod", "estimate"),
+      facadeArea: number(answers, "facadeArea"),
+      homeType: text(answers, "homeType", "row"),
+      facades: number(answers, "facades", 2),
+      floors: number(answers, "floors", 2),
+      wallType: text(answers, "wallType", "unknown"),
+      currentInsulation: text(answers, "currentInsulation", "unknown"),
+      preferredMethod: text(answers, "preferredMethod", "advice"),
+      finish: text(answers, "finish", "render"),
+      heating: text(answers, "heating", "other"),
+      buildingAge: text(answers, "buildingAge", "unknown"),
+      applicant: text(answers, "applicant", "renter"),
+      incomeCategory: text(answers, "incomeCategory", "unknown"),
+      contractor: text(answers, "contractor", "unknown"),
+      wallCondition: text(answers, "wallCondition", "unknown"),
+    });
+    const premiumText =
+      result.premiumStatus === "eligible"
+        ? euro(result.premium)
+        : result.premiumStatus === "unknown"
+          ? "Nog te controleren"
+          : "Niet voorzien";
+    return {
+      price: {
+        value: `${euro(result.investmentLow)} – ${euro(result.investmentHigh)}`,
+        hint: "Indicatieve richtprijs inclusief plaatsing; de gekozen afwerking en gevelstaat kunnen dit beïnvloeden.",
+      },
+      summary: `Voor ongeveer ${result.netArea.toLocaleString("nl-BE")} m² netto geveloppervlakte is ${result.methodLabel.toLowerCase()} het berekende startscenario. De jaarlijkse besparing ligt indicatief tussen ${euro(result.annualSavingsLow)} en ${euro(result.annualSavingsHigh)}.`,
+      advice:
+        result.method === "cavity"
+          ? "Laat met een endoscopisch onderzoek controleren of de spouw breed, droog en vrij genoeg is. Alleen dan is spouwmuurisolatie een geschikte oplossing."
+          : result.method === "interior"
+            ? "Binnenisolatie vraagt een zorgvuldige aansluiting bij vloeren, plafonds en ramen om koudebruggen en vochtproblemen te vermijden."
+            : "Laat de ondergrond, bouwknopen en gewenste gevelafwerking technisch beoordelen. Buitenisolatie is grondig, maar beïnvloedt dorpels, dakranden en aansluitingen.",
+      scenario: [
+        {
+          label: "Berekende netto oppervlakte",
+          value: `${result.netArea.toLocaleString("nl-BE")} m²`,
+        },
+        { label: "Voorgestelde methode", value: result.methodLabel },
+        { label: "Premiestatus", value: premiumText },
+      ],
+      kpis: [
+        {
+          label: "Jaarlijkse besparing",
+          value: `${euro(result.annualSavingsLow)} – ${euro(result.annualSavingsHigh)}`,
+        },
+        { label: "Minder warmteverlies", value: `circa ${result.heatLossReduction}%` },
+        { label: "Mogelijke premie", value: premiumText },
+      ],
+    };
+  },
+};
+
 export function BatteryWizard(props: ServiceComponentProps) {
   return <CalculatedServiceWizard {...props} config={batteryConfig} />;
 }
@@ -815,4 +1189,8 @@ export function HeatPumpBoilerWizard(props: ServiceComponentProps) {
 
 export function AircoWizard(props: ServiceComponentProps) {
   return <CalculatedServiceWizard {...props} config={aircoConfig} />;
+}
+
+export function FacadeInsulationWizard(props: ServiceComponentProps) {
+  return <CalculatedServiceWizard {...props} config={facadeInsulationConfig} />;
 }

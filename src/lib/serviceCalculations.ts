@@ -222,3 +222,136 @@ export function calculateAirco(input: AircoInput) {
     paybackYears,
   };
 }
+
+export type FacadeInsulationInput = {
+  surfaceMethod: "exact" | "estimate";
+  facadeArea?: number;
+  homeType?: "apartment" | "row" | "semi" | "detached";
+  facades?: number;
+  floors?: number;
+  wallType: "cavity" | "solid" | "unknown";
+  currentInsulation: "none" | "limited" | "good" | "unknown";
+  preferredMethod: "advice" | "cavity" | "exterior" | "interior";
+  finish: "render" | "brick" | "cladding" | "keep";
+  heating: "gas" | "oil" | "electric" | "heat-pump" | "other";
+  buildingAge: "pre-2006" | "post-2005" | "unknown";
+  applicant: "owner-occupant" | "social-landlord" | "landlord" | "renter";
+  incomeCategory: "category-3" | "category-4" | "category-1-2" | "unknown";
+  contractor: "yes" | "no" | "unknown";
+  wallCondition: "good" | "repairs" | "moisture" | "unknown";
+};
+
+const FACADE_METHODS = {
+  cavity: { label: "Spouwmuurisolatie", low: 25, high: 40 },
+  exterior: { label: "Buitenisolatie", low: 170, high: 285 },
+  interior: { label: "Binnenisolatie", low: 105, high: 165 },
+} as const;
+
+export function estimateFacadeArea(input: {
+  homeType: NonNullable<FacadeInsulationInput["homeType"]>;
+  facades: number;
+  floors: number;
+}) {
+  const widthByType = {
+    apartment: 7,
+    row: 6,
+    semi: 7.5,
+    detached: 8.5,
+  } as const;
+  const grossArea =
+    widthByType[input.homeType] *
+    clamp(Math.round(input.floors), 1, 4) *
+    2.6 *
+    clamp(Math.round(input.facades), 1, 4);
+
+  // Ramen en deuren nemen gemiddeld ongeveer 18% van de bruto geveloppervlakte in.
+  return round(grossArea * 0.82);
+}
+
+export function calculateFacadeInsulation(input: FacadeInsulationInput) {
+  const netArea =
+    input.surfaceMethod === "exact"
+      ? round(clamp(input.facadeArea ?? 0, 10, 600) * 0.82)
+      : estimateFacadeArea({
+          homeType: input.homeType ?? "row",
+          facades: input.facades ?? 2,
+          floors: input.floors ?? 2,
+        });
+  const method =
+    input.preferredMethod === "advice"
+      ? input.wallType === "cavity"
+        ? "cavity"
+        : "exterior"
+      : input.preferredMethod;
+  const selectedMethod = FACADE_METHODS[method];
+  const finishFactor =
+    method !== "exterior"
+      ? 1
+      : input.finish === "brick"
+        ? 1.12
+        : input.finish === "cladding"
+          ? 1.06
+          : input.finish === "keep"
+            ? 0.96
+            : 1;
+  const conditionFactor =
+    input.wallCondition === "moisture" ? 1.18 : input.wallCondition === "repairs" ? 1.1 : 1;
+  const investmentLow = round(netArea * selectedMethod.low * finishFactor * conditionFactor);
+  const investmentHigh = round(netArea * selectedMethod.high * finishFactor * conditionFactor);
+
+  const insulationFactor =
+    input.currentInsulation === "none"
+      ? 1
+      : input.currentInsulation === "limited"
+        ? 0.72
+        : input.currentInsulation === "good"
+          ? 0.35
+          : 0.8;
+  const heatingValue =
+    input.heating === "electric"
+      ? 14
+      : input.heating === "oil"
+        ? 11
+        : input.heating === "gas"
+          ? 9
+          : input.heating === "heat-pump"
+            ? 5
+            : 8;
+  const annualSavingsLow = round(netArea * heatingValue * insulationFactor * 0.75);
+  const annualSavingsHigh = round(netArea * heatingValue * insulationFactor * 1.25);
+  const heatLossReduction = round(18 + 20 * insulationFactor);
+
+  const premiumBase = Math.min(investmentHigh, 10000);
+  const baseEligibility =
+    input.buildingAge === "pre-2006" &&
+    input.contractor === "yes" &&
+    (input.applicant === "owner-occupant" || input.applicant === "social-landlord");
+  const premium = !baseEligibility
+    ? 0
+    : input.incomeCategory === "category-4"
+      ? Math.min(5000, round(premiumBase * 0.5))
+      : input.incomeCategory === "category-3"
+        ? Math.min(3500, round(premiumBase * 0.35))
+        : 0;
+  const premiumStatus =
+    input.buildingAge === "unknown" ||
+    input.contractor === "unknown" ||
+    input.incomeCategory === "unknown"
+      ? "unknown"
+      : premium > 0
+        ? "eligible"
+        : "not-eligible";
+
+  return {
+    netArea,
+    method,
+    methodLabel: selectedMethod.label,
+    investmentLow,
+    investmentHigh,
+    annualSavingsLow,
+    annualSavingsHigh,
+    heatLossReduction,
+    premium,
+    premiumStatus,
+  };
+}

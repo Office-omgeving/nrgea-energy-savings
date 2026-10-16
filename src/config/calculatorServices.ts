@@ -1,9 +1,18 @@
 import type { ComponentType } from "react";
 import type { LucideIcon } from "lucide-react";
-import { AirVent, BadgeEuro, BatteryCharging, Droplets, Sun, Thermometer } from "lucide-react";
+import {
+  AirVent,
+  BadgeEuro,
+  BatteryCharging,
+  BrickWall,
+  Droplets,
+  Sun,
+  Thermometer,
+} from "lucide-react";
 
 import {
   AircoWizard,
+  FacadeInsulationWizard,
   HeatPumpBoilerWizard,
   HeatPumpWizard,
 } from "@/components/calculator/services/ServiceWizards";
@@ -82,6 +91,17 @@ export const calculatorServices: CalculatorService[] = [
     icon: AirVent,
     enabled: true,
     component: AircoWizard,
+  },
+  {
+    id: "gevelisolatie",
+    slug: "gevelisolatie",
+    title: "Gevelisolatie",
+    subtitle: "Spouw, buiten- of binnenisolatie",
+    description: "Bereken je investering, besparing en mogelijke Vlaamse premie.",
+    icon: BrickWall,
+    badge: "Premie 2026",
+    enabled: true,
+    component: FacadeInsulationWizard,
   },
   {
     id: "premie",
