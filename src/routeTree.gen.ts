@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EmbedRouteImport } from './routes/embed'
+import { Route as ApiCalculatorLeadRouteImport } from './routes/api.calculator-lead'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +23,40 @@ const EmbedRoute = EmbedRouteImport.update({
   path: '/embed',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCalculatorLeadRoute = ApiCalculatorLeadRouteImport.update({
+  id: '/api/calculator-lead',
+  path: '/api/calculator-lead',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/embed': typeof EmbedRoute
+  '/api/calculator-lead': typeof ApiCalculatorLeadRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/embed': typeof EmbedRoute
+  '/api/calculator-lead': typeof ApiCalculatorLeadRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/embed': typeof EmbedRoute
+  '/api/calculator-lead': typeof ApiCalculatorLeadRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/embed'
+  fullPaths: '/' | '/embed' | '/api/calculator-lead'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/embed'
-  id: '__root__' | '/' | '/embed'
+  to: '/' | '/embed' | '/api/calculator-lead'
+  id: '__root__' | '/' | '/embed' | '/api/calculator-lead'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   EmbedRoute: typeof EmbedRoute
+  ApiCalculatorLeadRoute: typeof ApiCalculatorLeadRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmbedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/calculator-lead': {
+      id: '/api/calculator-lead'
+      path: '/api/calculator-lead'
+      fullPath: '/api/calculator-lead'
+      preLoaderRoute: typeof ApiCalculatorLeadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EmbedRoute: EmbedRoute,
+  ApiCalculatorLeadRoute: ApiCalculatorLeadRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

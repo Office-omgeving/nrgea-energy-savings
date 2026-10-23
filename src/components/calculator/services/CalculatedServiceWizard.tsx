@@ -253,14 +253,18 @@ export function CalculatedServiceWizard({
             submitting={submitting}
             onSubmit={async (values) => {
               setSubmitting(true);
-              await submitCalculatorLead({
-                serviceId: service.id,
-                contact: values,
-                answers: state,
-              });
-              setSubmitting(false);
-              setLead(values);
-              goto(resultStep);
+              try {
+                await submitCalculatorLead({
+                  serviceId: service.id,
+                  contact: values,
+                  result: estimate,
+                  answers: state,
+                });
+                setLead(values);
+                goto(resultStep);
+              } finally {
+                setSubmitting(false);
+              }
             }}
           />
           <button

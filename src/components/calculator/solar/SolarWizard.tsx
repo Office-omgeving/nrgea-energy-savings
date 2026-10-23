@@ -750,14 +750,19 @@ export function SolarWizard({ service, onBackToOverview }: ServiceComponentProps
         submitting={submitting}
         onSubmit={async (values) => {
           setSubmitting(true);
-          await submitCalculatorLead({
-            serviceId: service.id,
-            contact: values,
-            answers: { ...state, resolvedKwh: resolved.kwh, source: resolved.source },
-          });
-          setSubmitting(false);
-          setLead(values);
-          goto(5);
+          try {
+            await submitCalculatorLead({
+              serviceId: service.id,
+              contact: values,
+              result: { advice, financials },
+              answers: { ...state, resolvedKwh: resolved.kwh, source: resolved.source },
+            });
+
+            setLead(values);
+            goto(5);
+          } finally {
+            setSubmitting(false);
+          }
         }}
       />
       <button
