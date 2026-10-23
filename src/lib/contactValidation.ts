@@ -23,7 +23,8 @@ const normalizeCity = (value: string) =>
     .replace(/[^\p{L}\p{N}]/gu, "");
 
 export function citiesForPostalCode(value: string): string[] {
-  return places[value.trim()] || [];
+  const key = value.trim();
+  return Object.hasOwn(places, key) ? places[key] || [] : [];
 }
 export function normalizedPhone(value: string): string | null {
   const number = parsePhoneNumber(value.trim().replace(/^00/, "+"), {

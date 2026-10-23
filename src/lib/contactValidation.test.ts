@@ -28,8 +28,9 @@ describe("contactgegevens", () => {
   );
   it("behoudt internationale nummers", () =>
     expect(normalizedPhone("0031612345678")).toBe("+31612345678"));
-  it.each(["123", "9999", "0000", "0612"])("weigert ongeldige postcode %s", (postalCode) =>
-    expect(validateContact({ ...valid, postalCode }).postalCode).toBeTruthy(),
+  it.each(["123", "9999", "0000", "0612", "__proto__", "constructor"])(
+    "weigert ongeldige postcode %s",
+    (postalCode) => expect(validateContact({ ...valid, postalCode }).postalCode).toBeTruthy(),
   );
   it("weigert een gemeente bij de verkeerde postcode", () =>
     expect(validateContact({ ...valid, city: "Gent" }).city).toBeTruthy());
