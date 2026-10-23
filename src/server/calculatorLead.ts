@@ -1,3 +1,4 @@
+import { formatCalculationNote } from "./calculatorNote";
 import { z } from "zod";
 import { normalizeContact, validateContact } from "@/lib/contactValidation";
 
@@ -97,8 +98,8 @@ export async function handleCalculatorLead(
     `NRGEA calculator — ${labels[serviceId]}`,
     "Indicatie van de calculator; geen bindende offerte. Ingevulde gegevens nog te verifiëren.",
     `Referentie: ${submissionId}`,
-    `Antwoorden:\n${JSON.stringify(answers, null, 2)}`,
-    `Indicatief resultaat:\n${JSON.stringify(result, null, 2)}`,
+    `Antwoorden:\n${formatCalculationNote(answers)}`,
+    `Indicatief resultaat:\n${formatCalculationNote(result)}`,
     contact.message ? `Bericht: ${contact.message}` : "",
     "Toestemming: contact over berekening en persoonlijk advies.",
   ]
