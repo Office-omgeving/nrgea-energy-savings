@@ -27,3 +27,6 @@ opgegeven indicatie, geen bindende offerte of gecontroleerde verkoopprijs.
 - Nog vereist: echte demo write/read met dubbele aanvraag, mobiele test,
   bestaande notities behouden na serverrelease, ontvanger in productie instellen.
 - De productieconfiguratie is nog niet veranderd.
+
+De gevelisolatieconfig sloeg als enige de contactstap over. Die uitzondering is
+verwijderd zodat ook deze afgeronde berekening aan een klant kan worden gekoppeld.

@@ -805,7 +805,6 @@ const aircoConfig: CalculatedServiceConfig = {
 const facadeInsulationConfig: CalculatedServiceConfig = {
   description:
     "Schat de geschikte isolatiemethode, investering, energiebesparing en mogelijke Vlaamse premie.",
-  skipContact: true,
   resultVariant: "facade",
   initial: {
     buildingAge: "",
