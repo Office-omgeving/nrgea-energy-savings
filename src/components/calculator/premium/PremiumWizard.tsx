@@ -374,14 +374,19 @@ export function PremiumWizard({ service, onBackToOverview }: ServiceComponentPro
             submitting={submitting}
             onSubmit={async (values) => {
               setSubmitting(true);
-              await submitCalculatorLead({
-                serviceId: service.id,
-                contact: values,
-                answers: state,
-              });
-              setSubmitting(false);
-              setLead(values);
-              goTo("result");
+              try {
+                await submitCalculatorLead({
+                  serviceId: service.id,
+                  contact: values,
+                  result: calculation,
+                  answers: state,
+                });
+
+                setLead(values);
+                goTo("result");
+              } finally {
+                setSubmitting(false);
+              }
             }}
           />
           <button

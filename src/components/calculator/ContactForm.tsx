@@ -1,17 +1,13 @@
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
 
-export type ContactFormValues = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  street: string;
-  houseNumber: string;
-  postalCode: string;
-  city: string;
-  message: string;
-  consent: boolean;
-};
+import {
+  citiesForPostalCode,
+  normalizeContact,
+  validateContact,
+  type ContactErrors,
+  type ContactFormValues,
+} from "@/lib/contactValidation";
+export type { ContactFormValues } from "@/lib/contactValidation";
 
 const EMPTY: ContactFormValues = {
   firstName: "",
@@ -26,30 +22,6 @@ const EMPTY: ContactFormValues = {
   consent: false,
 };
 
-type Errors = Partial<Record<keyof ContactFormValues, string>>;
-
-function validate(values: ContactFormValues): Errors {
-  const errors: Errors = {};
-  const required: (keyof ContactFormValues)[] = [
-    "firstName",
-    "lastName",
-    "email",
-    "phone",
-    "street",
-    "houseNumber",
-    "postalCode",
-    "city",
-  ];
-  required.forEach((key) => {
-    if (!String(values[key]).trim()) errors[key] = "Dit veld is verplicht.";
-  });
-  if (values.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
-    errors.email = "Vul een geldig e-mailadres in.";
-  }
-  if (!values.consent) errors.consent = "Je moet akkoord gaan om verder te gaan.";
-  return errors;
-}
-
 function Field({
   label,
   value,
@@ -57,6 +29,7 @@ function Field({
   error,
   type = "text",
   required,
+  suggestions,
 }: {
   label: string;
   value: string;
@@ -64,21 +37,38 @@ function Field({
   error?: string | undefined;
   type?: string;
   required?: boolean;
+  suggestions?: string[];
 }) {
+  const id = useId();
   return (
     <div>
-      <label className="mb-1.5 block text-sm font-medium text-foreground">
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-foreground">
         {label}
         {required ? " *" : ""}
       </label>
       <input
+        id={id}
         type={type}
+        required={required}
+        list={suggestions?.length ? `${id}-options` : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         aria-invalid={!!error}
         className="h-12 w-full rounded-xl border border-input bg-input-background px-4 text-sm text-foreground outline-none transition-colors focus:border-primary focus:bg-card focus:ring-2 focus:ring-ring/30"
       />
-      {error ? <p className="mt-1 text-xs font-medium text-destructive">{error}</p> : null}
+      {suggestions?.length ? (
+        <datalist id={`${id}-options`}>
+          {suggestions.map((value) => (
+            <option key={value} value={value} />
+          ))}
+        </datalist>
+      ) : null}
+      {error ? (
+        <p id={`${id}-error`} className="mt-1 text-xs font-medium text-destructive">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -87,11 +77,15 @@ export function ContactForm({
   onSubmit,
   submitting,
 }: {
-  onSubmit: (values: ContactFormValues) => void;
+  onSubmit: (values: ContactFormValues) => void | Promise<void>;
   submitting?: boolean;
 }) {
   const [values, setValues] = useState<ContactFormValues>(EMPTY);
-  const [errors, setErrors] = useState<Errors>({});
+  const [errors, setErrors] = useState<ContactErrors>({});
+
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const sending = useRef(false);
+  const [pending, setPending] = useState(false);
 
   const set = (key: keyof ContactFormValues, value: string | boolean) =>
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -99,11 +93,25 @@ export function ContactForm({
   return (
     <form
       noValidate
-      onSubmit={(event) => {
+      onSubmit={async (event) => {
         event.preventDefault();
-        const next = validate(values);
+        if (sending.current || submitting) return;
+        const next = validateContact(values);
         setErrors(next);
-        if (Object.keys(next).length === 0) onSubmit(values);
+        setSubmissionError(null);
+        if (Object.keys(next).length > 0) return;
+        sending.current = true;
+        setPending(true);
+        try {
+          await onSubmit(normalizeContact(values));
+        } catch {
+          setSubmissionError(
+            "Je berekening is nog niet bevestigd. Je gegevens blijven staan. Probeer opnieuw.",
+          );
+        } finally {
+          sending.current = false;
+          setPending(false);
+        }
       }}
       className="space-y-4"
     >
@@ -161,6 +169,7 @@ export function ContactForm({
         />
         <Field
           label="Gemeente"
+          suggestions={citiesForPostalCode(values.postalCode)}
           required
           value={values.city}
           error={errors.city}
@@ -198,12 +207,17 @@ export function ContactForm({
         ) : null}
       </div>
 
+      {submissionError ? (
+        <p role="alert" className="text-sm text-destructive">
+          {submissionError}
+        </p>
+      ) : null}
       <button
         type="submit"
-        disabled={submitting}
+        disabled={submitting || pending}
         className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60 sm:w-auto"
       >
-        {submitting ? "Even geduld…" : "Bekijk mijn resultaat"}
+        {submitting || pending ? "Even geduld…" : "Bekijk mijn resultaat"}
       </button>
     </form>
   );

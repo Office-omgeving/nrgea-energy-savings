@@ -829,13 +829,18 @@ export function HomeBatteryWizard({ service, onBackToOverview }: ServiceComponen
         submitting={submitting}
         onSubmit={async (values) => {
           setSubmitting(true);
-          await submitCalculatorLead({
-            serviceId: service.id,
-            contact: values,
-            answers: { ...state, resolvedKwh: resolved.kwh, pv, capacity, inverter },
-          });
-          setSubmitting(false);
-          goto(7);
+          try {
+            await submitCalculatorLead({
+              serviceId: service.id,
+              contact: values,
+              result: { capacity, savings: savingsText, accuracy, smartControl: smartOn },
+              answers: { ...state, resolvedKwh: resolved.kwh, pv, capacity, inverter },
+            });
+
+            goto(7);
+          } finally {
+            setSubmitting(false);
+          }
         }}
       />
       <button

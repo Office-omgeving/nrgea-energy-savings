@@ -1,33 +1,54 @@
+import type { ContactFormValues } from "@/lib/contactValidation";
+
 export type CalculatorLead = {
   serviceId: string;
-  contact: Record<string, unknown>;
+  contact: ContactFormValues;
   answers?: Record<string, unknown>;
+  result: unknown;
 };
-
 export type CalculatorLeadResponse = {
   ok: true;
   reference: string;
   submittedAt: string;
 };
-
-/**
- * Lokale mock-submit.
- * Verstuurt bewust NIETS: geen webhook, geen e-mail, geen externe database.
- * Logt enkel in development en geeft een lokale succesresponse terug.
- */
-export async function submitCalculatorLead(
-  lead: CalculatorLead,
-): Promise<CalculatorLeadResponse> {
-  if (import.meta.env.DEV) {
-    // eslint-disable-next-line no-console
-    console.info("[nrgea-calculator] mock lead submit", lead);
+const submissions = new Map<string, string>();
+async function submissionId(body: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(body));
+  const key =
+    "nrgea-submission:" +
+    Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+  let id = submissions.get(key);
+  try {
+    id ||= sessionStorage.getItem(key) || undefined;
+  } catch {
+    /* Memory fallback. */
   }
-
-  await new Promise((resolve) => setTimeout(resolve, 700));
-
-  return {
-    ok: true,
-    reference: `NRG-LOCAL-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
-    submittedAt: new Date().toISOString(),
-  };
+  id ||= crypto.randomUUID();
+  submissions.set(key, id);
+  try {
+    sessionStorage.setItem(key, id);
+  } catch {
+    /* No personal data in storage. */
+  }
+  return id;
+}
+export async function submitCalculatorLead(lead: CalculatorLead): Promise<CalculatorLeadResponse> {
+  const id = await submissionId(JSON.stringify(lead));
+  const response = await fetch("/api/calculator-lead", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...lead, submissionId: id }),
+    signal: AbortSignal.timeout(25000),
+  });
+  const result: unknown = await response.json();
+  if (
+    !response.ok ||
+    !result ||
+    typeof result !== "object" ||
+    !("ok" in result) ||
+    result.ok !== true
+  ) {
+    throw new Error("De opslag is nog niet bevestigd.");
+  }
+  return result as CalculatorLeadResponse;
 }
