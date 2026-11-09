@@ -120,7 +120,8 @@ export async function handleCalculatorLead(
     Postcode: contact.postalCode,
     Gemeente: contact.city,
     Bericht: note,
-    Aanvraag: "NRGEA calculator",
+    // Wordt in Strilio de tag van het contact (naast "Website").
+    Aanvraag: "calculator",
   };
   for (const [key, value] of Object.entries(fields)) form.set(key, value);
   try {
