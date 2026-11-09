@@ -407,7 +407,8 @@ const heatPumpConfig: CalculatedServiceConfig = {
       title: "Premie",
       description:
         "De Mijn VerbouwPremie hangt af van uw gezinsinkomen. Zo berekenen we uw netto investering.",
-      showWhen: { key: "homeType", values: RESIDENTIAL },
+      // Standaard tonen (vaste stapteller), enkel weglaten bij een bedrijfspand.
+      showWhen: { key: "homeType", not: "commercial" },
       questions: [
         {
           kind: "choice",

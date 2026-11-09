@@ -18,7 +18,10 @@ import { getQuestionError } from "./questionValidation";
 export type WizardAnswers = Record<string, string | number>;
 
 type VisibilityCondition =
-  { key: string; value: string } | { key: string; values: string[] } | { key: string; min: number };
+  | { key: string; value: string }
+  | { key: string; values: string[] }
+  | { key: string; not: string }
+  | { key: string; min: number };
 
 type ChoiceQuestion = {
   kind: "choice";
@@ -75,6 +78,7 @@ function matches(condition: VisibilityCondition | undefined, answers: WizardAnsw
   if (!condition) return true;
   const current = answers[condition.key];
   if ("value" in condition) return current === condition.value;
+  if ("not" in condition) return current !== condition.not;
   if ("values" in condition)
     return typeof current === "string" && condition.values.includes(current);
   return typeof current === "number" && current >= condition.min;
@@ -303,9 +307,12 @@ export function CalculatedServiceWizard({
           summary={
             <InfoNotice>
               <span className="whitespace-pre-line">{estimate.summary}</span>
-              {lead
-                ? ` We nemen contact op met ${lead.firstName} om dit resultaat te verfijnen.`
-                : ""}
+              {lead ? (
+                <span className={estimate.summary.includes("\n") ? "mt-3 block" : undefined}>
+                  {estimate.summary.includes("\n") ? "" : " "}We nemen contact op met{" "}
+                  {lead.firstName} om dit resultaat te verfijnen.
+                </span>
+              ) : null}
             </InfoNotice>
           }
           kpis={
