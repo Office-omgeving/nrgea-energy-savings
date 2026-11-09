@@ -1,3 +1,10 @@
+import {
+  PREMIUM_PRODUCTS,
+  getIncomeThresholds,
+  type HouseholdType,
+  type IncomeCategory,
+} from "./premiumCalculations";
+
 const ELECTRICITY_PRICE = 0.33;
 const GAS_PRICE = 0.11;
 const OIL_PRICE = 0.12;
@@ -75,56 +82,95 @@ export function calculateBattery(input: BatteryInput) {
   return { capacity, shiftedEnergy, annualSavings, investment, paybackYears, selfConsumptionGain };
 }
 
+export type HeatPumpFuel = "gas-m3" | "gas-kwh" | "oil";
+export type HeatPumpHomeType = "apartment" | "row" | "semi" | "detached" | "commercial";
+
 export type HeatPumpInput = {
-  homeArea: number;
-  annualHeatingCost: number;
-  homeType: "apartment" | "row" | "semi" | "detached";
-  insulation: "poor" | "average" | "good";
-  emitters: "floor" | "low-temp" | "radiators";
-  currentHeating: "gas" | "oil" | "electric";
-  hotWater: boolean;
-  electricityPrice?: number;
+  fuel: HeatPumpFuel;
+  /** Jaarverbruik in m³ (gas-m3), kWh (gas-kwh) of liter (oil). */
+  consumption: number;
+  cookingOnGas: boolean;
+  homeType: HeatPumpHomeType;
+  household?: HouseholdType | undefined;
+  dependents?: number | undefined;
+  taxableIncome?: number | undefined;
 };
 
+/** Prijsvork NRGEA lucht-waterwarmtepomp, btw inbegrepen en geplaatst (november 2026). */
+export const HEAT_PUMP_PRICE_BANDS = [
+  { label: "4 à 6 kW", maxPower: 6, min: 9_000, max: 11_900 },
+  { label: "7 à 10 kW", maxPower: 10, min: 10_680, max: 13_948 },
+  { label: "12 à 17 kW", maxPower: 17, min: 12_770, max: 15_430 },
+] as const;
+
+/**
+ * Zelfde formule als nrgea-vermogen.netlify.app:
+ * mazout liter ÷ 200, aardgas m³ ÷ 200 of kWh ÷ 9,7 ÷ 200, min 50 m³ bij koken op gas.
+ */
+export function estimateHeatPumpPower(
+  fuel: HeatPumpFuel,
+  consumption: number,
+  cookingOnGas: boolean,
+) {
+  if (!Number.isFinite(consumption) || consumption <= 0) return 0;
+  const base =
+    fuel === "oil"
+      ? consumption
+      : (fuel === "gas-m3" ? consumption : consumption / 9.7) - (cookingOnGas ? 50 : 0);
+  return Math.max(0, Math.round((base / 200 + Number.EPSILON) * 100) / 100);
+}
+
+/** Valt het vermogen tussen twee schijven, dan nemen we de volgende (hogere) schijf. */
+export function getHeatPumpPriceBand(power: number) {
+  return HEAT_PUMP_PRICE_BANDS.find((band) => power <= band.maxPower) ?? null;
+}
+
+export function getIncomeCategory(
+  household: HouseholdType,
+  dependents: number,
+  taxableIncome: number,
+): IncomeCategory {
+  const thresholds = getIncomeThresholds(household, dependents);
+  if (taxableIncome <= thresholds.cat4) return "cat4";
+  if (taxableIncome <= thresholds.cat3) return "cat3";
+  if (taxableIncome <= thresholds.cat2) return "cat2";
+  return "cat1";
+}
+
+/** Mijn VerbouwPremie lucht-water: basisbedrag, begrensd op een percentage van de factuur. */
+export function heatPumpPremium(price: number, category: IncomeCategory) {
+  const { amounts } = PREMIUM_PRODUCTS["air-water"];
+  const percentage = { cat4: 0.5, cat3: 0.35, cat2: 0.25, cat1: 0.2 }[category];
+  return Math.min(amounts[category], Math.round(price * percentage));
+}
+
 export function calculateHeatPump(input: HeatPumpInput) {
-  const demandPerM2 = input.insulation === "poor" ? 175 : input.insulation === "average" ? 115 : 70;
-  const homeFactor =
-    input.homeType === "detached"
-      ? 1.12
-      : input.homeType === "semi"
-        ? 1.03
-        : input.homeType === "apartment"
-          ? 0.82
-          : 0.92;
-  const heatDemand = input.homeArea * demandPerM2 * homeFactor + (input.hotWater ? 2200 : 0);
-  const baseScop = input.emitters === "floor" ? 4.2 : input.emitters === "low-temp" ? 3.65 : 3.05;
-  const scop = Number(
-    clamp(
-      baseScop + (input.insulation === "good" ? 0.15 : input.insulation === "poor" ? -0.2 : 0),
-      2.7,
-      4.4,
-    ).toFixed(1),
-  );
-  const electricityUse = round(heatDemand / scop);
-  const annualCost = round(electricityUse * (input.electricityPrice ?? ELECTRICITY_PRICE));
-  const annualSavings = round(input.annualHeatingCost - annualCost);
-  const investment = round(11250 + input.homeArea * 16 + (input.hotWater ? 1200 : 0));
-  const paybackYears = annualSavings > 0 ? Number((investment / annualSavings).toFixed(1)) : 0;
-  const peakWattsPerM2 =
-    input.insulation === "poor" ? 85 : input.insulation === "average" ? 60 : 40;
-  const thermalPower = Number(
-    clamp((input.homeArea * peakWattsPerM2 * homeFactor) / 1000, 4, 16).toFixed(1),
-  );
+  const power = estimateHeatPumpPower(input.fuel, input.consumption, input.cookingOnGas);
+  const band = getHeatPumpPriceBand(power);
+  const residential = input.homeType !== "commercial";
+  const category =
+    residential &&
+    input.household &&
+    typeof input.taxableIncome === "number" &&
+    Number.isFinite(input.taxableIncome)
+      ? getIncomeCategory(input.household, input.dependents ?? 0, input.taxableIncome)
+      : null;
+
+  if (!band) {
+    return { power, band: null, category, onRequest: true as const };
+  }
+
+  const premiumMin = category ? heatPumpPremium(band.min, category) : 0;
+  const premiumMax = category ? heatPumpPremium(band.max, category) : 0;
 
   return {
-    heatDemand: round(heatDemand),
-    scop,
-    electricityUse,
-    annualCost,
-    annualSavings,
-    investment,
-    paybackYears,
-    thermalPower,
+    power,
+    band,
+    category,
+    onRequest: false as const,
+    price: { min: band.min, max: band.max },
+    premium: { min: premiumMin, max: premiumMax },
+    net: { min: band.min - premiumMin, max: band.max - premiumMax },
   };
 }
 

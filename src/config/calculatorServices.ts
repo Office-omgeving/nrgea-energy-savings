@@ -66,7 +66,7 @@ export const calculatorServices: CalculatorService[] = [
     id: "lucht-water-warmtepomp",
     slug: "lucht-waterwarmtepomp",
     title: "Lucht-waterwarmtepomp",
-    description: "Vervang uw gasketel door een lucht-waterwarmtepomp.",
+    description: "Gas- of mazoutvrij: vermogen, prijsvork en premie in één keer.",
     icon: Thermometer,
     badge: "Nieuwe premies",
     enabled: true,

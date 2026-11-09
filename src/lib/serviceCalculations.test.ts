@@ -5,6 +5,9 @@ import {
   calculateBattery,
   calculateFacadeInsulation,
   calculateHeatPump,
+  estimateHeatPumpPower,
+  getHeatPumpPriceBand,
+  heatPumpPremium,
   calculateHeatPumpBoiler,
   estimateBatteryEnergyProfile,
   estimateFacadeArea,
@@ -49,21 +52,64 @@ describe("thuisbatterij", () => {
 });
 
 describe("lucht-waterwarmtepomp", () => {
-  it("berekent vermogen, verbruik en investering", () => {
-    const result = calculateHeatPump({
-      homeArea: 150,
-      annualHeatingCost: 2400,
-      homeType: "semi",
-      insulation: "average",
-      emitters: "low-temp",
-      currentHeating: "gas",
-      hotWater: true,
-    });
+  it("rekent vermogen zoals de vermogentool", () => {
+    expect(estimateHeatPumpPower("oil", 2000, false)).toBe(10);
+    expect(estimateHeatPumpPower("gas-m3", 2000, false)).toBe(10);
+    expect(estimateHeatPumpPower("gas-m3", 2050, true)).toBe(10);
+    expect(estimateHeatPumpPower("gas-kwh", 19400, false)).toBe(10);
+  });
 
-    expect(result.thermalPower).toBeGreaterThan(4);
-    expect(result.scop).toBeGreaterThan(3);
-    expect(result.electricityUse).toBeGreaterThan(0);
-    expect(result.investment).toBeGreaterThan(10000);
+  it("kiest de juiste prijsschijf en rondt gaten naar boven af", () => {
+    expect(getHeatPumpPriceBand(3)?.label).toBe("4 à 6 kW");
+    expect(getHeatPumpPriceBand(6)?.label).toBe("4 à 6 kW");
+    expect(getHeatPumpPriceBand(6.5)?.label).toBe("7 à 10 kW");
+    expect(getHeatPumpPriceBand(10)?.label).toBe("7 à 10 kW");
+    expect(getHeatPumpPriceBand(11)?.label).toBe("12 à 17 kW");
+    expect(getHeatPumpPriceBand(17)?.label).toBe("12 à 17 kW");
+    expect(getHeatPumpPriceBand(17.5)).toBeNull();
+  });
+
+  it("berekent prijsvork, premie en netto investering", () => {
+    const result = calculateHeatPump({
+      fuel: "gas-m3",
+      consumption: 1800,
+      cookingOnGas: false,
+      homeType: "semi",
+      household: "couple",
+      dependents: 0,
+      taxableIncome: 50_000,
+    });
+    expect(result.onRequest).toBe(false);
+    if (result.onRequest) return;
+    expect(result.power).toBe(9);
+    expect(result.price).toEqual({ min: 10_680, max: 13_948 });
+    expect(result.category).toBe("cat3");
+    expect(result.premium).toEqual({ min: 3_738, max: 4_500 });
+    expect(result.net).toEqual({ min: 6_942, max: 9_448 });
+  });
+
+  it("geeft geen premie voor een bedrijfspand en op aanvraag boven 17 kW", () => {
+    const commercial = calculateHeatPump({
+      fuel: "oil",
+      consumption: 1000,
+      cookingOnGas: false,
+      homeType: "commercial",
+    });
+    expect(commercial.onRequest).toBe(false);
+    if (!commercial.onRequest) expect(commercial.premium).toEqual({ min: 0, max: 0 });
+
+    const large = calculateHeatPump({
+      fuel: "oil",
+      consumption: 4000,
+      cookingOnGas: false,
+      homeType: "detached",
+      household: "single",
+      dependents: 0,
+      taxableIncome: 20_000,
+    });
+    expect(large.onRequest).toBe(true);
+    expect(heatPumpPremium(9_000, "cat4")).toBe(4_500);
+    expect(heatPumpPremium(15_430, "cat4")).toBe(6_000);
   });
 });
 
