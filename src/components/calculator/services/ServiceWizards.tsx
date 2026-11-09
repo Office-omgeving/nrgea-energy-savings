@@ -6,7 +6,10 @@ import {
   calculateHeatPump,
   calculateHeatPumpBoiler,
   estimateBatteryEnergyProfile,
+  type HeatPumpFuel,
+  type HeatPumpHomeType,
 } from "@/lib/serviceCalculations";
+import type { HouseholdType } from "@/lib/premiumCalculations";
 import {
   CalculatedServiceWizard,
   type CalculatedServiceConfig,
@@ -292,167 +295,237 @@ const batteryConfig: CalculatedServiceConfig = {
   },
 };
 
+const BOOKING_URL = "https://app.strilio.io/book/nrgea-advies";
+const RESIDENTIAL = ["apartment", "row", "semi", "detached"];
+
+const euroRange = (min: number, max: number) =>
+  min === max ? euro(min) : `${euro(min)} à ${euro(max)}`;
+
+const kw = (value: number) =>
+  `${new Intl.NumberFormat("nl-BE", { maximumFractionDigits: 1 }).format(value)} kW`;
+
 const heatPumpConfig: CalculatedServiceConfig = {
+  title: "Gas- of mazoutvrij met een warmtepomp",
   description:
-    "Schat het benodigde vermogen, verbruik en financieel effect van een lucht-waterwarmtepomp.",
+    "Vul uw huidig gas- of mazoutverbruik in en ontdek welk vermogen u nodig hebt, wat het kost en wat u na premie netto betaalt.",
   initial: {
-    homeArea: "",
     homeType: "",
-    insulation: "",
-    currentHeating: "",
-    annualHeatingCost: "",
-    emitters: "",
-    hotWater: "",
-    electricityPrice: 0.33,
+    fuel: "",
+    gasM3: "",
+    gasKwh: "",
+    oilLiters: "",
+    cookingOnGas: "",
+    household: "",
+    dependents: 0,
+    taxableIncome: "",
   },
   steps: [
     {
-      title: "Woning",
-      description: "De warmtevraag hangt vooral af van de grootte en isolatie van je woning.",
+      title: "Woning en verbruik",
+      description:
+        "Uw huidige jaarverbruik is het belangrijkste cijfer om het vermogen te bepalen.",
       questions: [
-        {
-          kind: "number",
-          key: "homeArea",
-          label: "Verwarmde vloeroppervlakte",
-          unit: "m²",
-          hint: "Tel alleen de ruimtes mee die gewoonlijk verwarmd worden.",
-          min: 25,
-          max: 500,
-        },
         {
           kind: "choice",
           key: "homeType",
           label: "Type woning",
+          columns: 3,
           options: [
             {
               value: "apartment",
               label: "Appartement",
               description: "Woonlaag in een groter gebouw.",
             },
-            { value: "row", label: "Rijwoning", description: "Aan beide zijden aangebouwd." },
-            { value: "semi", label: "Halfopen", description: "Aan één zijde aangebouwd." },
+            { value: "row", label: "Rijhuis", description: "Aan beide zijden aangebouwd." },
+            { value: "semi", label: "Half-open", description: "Aan één zijde aangebouwd." },
             { value: "detached", label: "Open bebouwing", description: "Vier vrijstaande gevels." },
+            {
+              value: "commercial",
+              label: "Bedrijfspand",
+              description: "Kantoor, winkel of atelier.",
+            },
           ],
         },
         {
           kind: "choice",
-          key: "insulation",
-          label: "Isolatieniveau",
+          key: "fuel",
+          label: "Huidige verwarming en eenheid",
           columns: 3,
           options: [
-            { value: "poor", label: "Beperkt", description: "Oudere woning, weinig renovatie." },
-            { value: "average", label: "Gemiddeld", description: "Dak en glas zijn aangepakt." },
-            { value: "good", label: "Goed", description: "Grondig gerenoveerd of recent." },
+            { value: "gas-m3", label: "Aardgas in m³", description: "Verbruik in kubieke meter." },
+            {
+              value: "gas-kwh",
+              label: "Aardgas in kWh",
+              description: "Zoals op de meeste afrekeningen.",
+            },
+            { value: "oil", label: "Mazout in liter", description: "Wat u per jaar inslaat." },
+          ],
+        },
+        {
+          kind: "number",
+          key: "gasM3",
+          label: "Jaarverbruik aardgas",
+          unit: "m³",
+          hint: "Terug te vinden op uw jaarafrekening.",
+          min: 200,
+          max: 10000,
+          showWhen: { key: "fuel", value: "gas-m3" },
+        },
+        {
+          kind: "number",
+          key: "gasKwh",
+          label: "Jaarverbruik aardgas",
+          unit: "kWh",
+          hint: "Terug te vinden op uw jaarafrekening.",
+          min: 2000,
+          max: 100000,
+          showWhen: { key: "fuel", value: "gas-kwh" },
+        },
+        {
+          kind: "number",
+          key: "oilLiters",
+          label: "Jaarverbruik mazout",
+          unit: "liter",
+          hint: "Gemiddeld per jaar, niet per levering.",
+          min: 200,
+          max: 10000,
+          showWhen: { key: "fuel", value: "oil" },
+        },
+        {
+          kind: "choice",
+          key: "cookingOnGas",
+          label: "Wordt er gekookt op gas?",
+          showWhen: { key: "fuel", values: ["gas-m3", "gas-kwh"] },
+          options: [
+            { value: "no", label: "Nee", description: "Gas enkel voor verwarming en warm water." },
+            { value: "yes", label: "Ja", description: "We trekken het kookgas af." },
           ],
         },
       ],
     },
     {
-      title: "Verwarming",
-      description: "Vergelijk je huidige verwarmingskost met het verwachte warmtepompverbruik.",
+      title: "Premie",
+      description:
+        "De Mijn VerbouwPremie hangt af van uw gezinsinkomen. Zo berekenen we uw netto investering.",
+      // Standaard tonen (vaste stapteller), enkel weglaten bij een bedrijfspand.
+      showWhen: { key: "homeType", not: "commercial" },
       questions: [
         {
           kind: "choice",
-          key: "currentHeating",
-          label: "Huidige hoofdverwarming",
-          columns: 3,
+          key: "household",
+          label: "Gezinssituatie",
           options: [
-            { value: "gas", label: "Aardgas", description: "Ketel op aardgas." },
-            { value: "oil", label: "Stookolie", description: "Mazoutketel." },
+            { value: "single", label: "Alleenstaand", description: "U woont alleen." },
             {
-              value: "electric",
-              label: "Elektrisch",
-              description: "Directe elektrische verwarming.",
+              value: "couple",
+              label: "Samenwonend",
+              description: "Gehuwd of wettelijk/feitelijk samenwonend.",
             },
           ],
         },
         {
           kind: "number",
-          key: "annualHeatingCost",
-          label: "Jaarlijkse kost voor verwarming",
+          key: "dependents",
+          label: "Personen ten laste",
+          unit: "personen",
+          hint: "Kinderen of andere personen ten laste.",
+          min: 0,
+          max: 10,
+        },
+        {
+          kind: "number",
+          key: "taxableIncome",
+          label: "Netto belastbaar gezinsinkomen",
           unit: "€/jaar",
-          hint: "Laat sanitair warm water buiten beschouwing als dat apart wordt opgewekt.",
-          min: 200,
-          max: 15000,
-        },
-        {
-          kind: "choice",
-          key: "emitters",
-          label: "Afgiftesysteem",
-          columns: 3,
-          options: [
-            { value: "floor", label: "Vloerverwarming", description: "Lage aanvoertemperatuur." },
-            {
-              value: "low-temp",
-              label: "Lage-temperatuurradiatoren",
-              description: "Radiatoren geschikt voor 45–55 °C.",
-            },
-            {
-              value: "radiators",
-              label: "Klassieke radiatoren",
-              description: "Ontworpen voor hogere temperaturen.",
-            },
-          ],
-        },
-        {
-          kind: "choice",
-          key: "hotWater",
-          label: "Moet de warmtepomp ook sanitair warm water maken?",
-          options: [
-            { value: "yes", label: "Ja", description: "Verwarming en warm water combineren." },
-            { value: "no", label: "Nee", description: "Warm water blijft apart." },
-          ],
-        },
-        {
-          kind: "number",
-          key: "electricityPrice",
-          label: "Elektriciteitsprijs",
-          unit: "€/kWh",
-          hint: "Vooraf ingevuld met een indicatieve all-inprijs.",
-          min: 0.1,
-          max: 1,
-          step: 0.01,
+          hint: "Van het aanslagbiljet, drie jaar voor de aanvraag. Een schatting volstaat.",
+          min: 0,
+          max: 500000,
+          step: 1000,
         },
       ],
     },
   ],
   calculate: (answers) => {
+    const fuel = text<HeatPumpFuel>(answers, "fuel", "gas-m3");
+    const homeType = text<HeatPumpHomeType>(answers, "homeType", "row");
+    const consumption = number(
+      answers,
+      fuel === "oil" ? "oilLiters" : fuel === "gas-kwh" ? "gasKwh" : "gasM3",
+    );
+    const residential = RESIDENTIAL.includes(homeType);
     const result = calculateHeatPump({
-      homeArea: number(answers, "homeArea"),
-      annualHeatingCost: number(answers, "annualHeatingCost"),
-      homeType: text(answers, "homeType", "row"),
-      insulation: text(answers, "insulation", "average"),
-      emitters: text(answers, "emitters", "low-temp"),
-      currentHeating: text(answers, "currentHeating", "gas"),
-      hotWater: text(answers, "hotWater", "no" as string) === "yes",
-      electricityPrice: number(answers, "electricityPrice", 0.33),
+      fuel,
+      consumption,
+      cookingOnGas: fuel !== "oil" && text(answers, "cookingOnGas", "no" as string) === "yes",
+      homeType,
+      household: residential ? text<HouseholdType>(answers, "household", "couple") : undefined,
+      dependents: number(answers, "dependents", 0),
+      taxableIncome: residential ? number(answers, "taxableIncome", Number.NaN) : undefined,
     });
-    const saves = result.annualSavings > 0;
+
+    // Tekst van Nico (NRGEA, mail 5/11/2026), letterlijk overgenomen.
+    const intro = [
+      "Waarom nog mazout inslaan of een hoge gasfactuur betalen? Dankzij onze nieuwste hogetemperatuurwarmtepompen kan het voor elk type woning.",
+      "Met 75 graden vertrektemperatuur leveren ze genoeg warmte, ook voor uw radiatoren.",
+      "Wij vervangen uw gas- of mazoutketel één-op-één, zonder breekwerk, in 1 à 2 dagen.",
+      "U verbruikt tot 75% minder energie, en wij regelen alles: warmte-audit, attesten, subsidies en 100% garantie op de goede werking.",
+    ].join("\n");
+    const outro =
+      "Hiermee bent u volledig gas- of mazoutvrij en verlost van deze hoge energiefacturen en energietaksen ( CO2 taks enz)";
+    const advice = [
+      "De rendementen zitten tussen 14 à 30% per jaar afhankelijk van uw verbruik.",
+      "De jaarlijkse besparing hangt af van enkele factoren welke wij graag samen met u bekijken tijdens een technische controle van de woning.",
+    ].join("\n");
+    const cta = { label: "Plan een adviesgesprek", href: BOOKING_URL };
+
+    if (result.onRequest) {
+      return {
+        price: {
+          label: "Indicatieve prijs, btw in en geplaatst",
+          value: "Op aanvraag",
+          hint: "Voor een vermogen boven 17 kW maken we een prijs op maat.",
+        },
+        summary: `${intro}\n\nVolgens uw gegevens heeft uw ideale warmtepomp een vermogen rond ${kw(result.power)}\nvoor dit vermogen maken we graag een prijs op aanvraag`,
+        advice,
+        cta,
+        scenario: [{ label: "Geschat vermogen", value: kw(result.power) }],
+        kpis: [
+          { label: "Geschat vermogen", value: kw(result.power) },
+          { label: "Indicatieve prijs", value: "Op aanvraag" },
+          { label: "Netto investering", value: "Op aanvraag" },
+        ],
+      };
+    }
+
+    const price = euroRange(result.price.min, result.price.max);
+    const premium = euroRange(result.premium.min, result.premium.max);
+    const net = euroRange(result.net.min, result.net.max);
+    const hasPremium = result.premium.max > 0;
+    const priceLine = hasPremium
+      ? `uw indicatieve prijs van ${price} mag u verminderen met ${premium} subsidie\nuw netto investering bedraagt dan ${net}`
+      : `uw indicatieve prijs bedraagt ${price}`;
+
     return {
       price: {
-        value: euro(result.investment),
-        hint: "Indicatieve installatieprijs inclusief btw, vóór eventuele premies.",
+        label: "Indicatieve prijs, btw in en geplaatst",
+        value: price,
+        hint: `Voor een warmtepomp van ${result.band.label}, vóór premie.`,
       },
-      summary: `De geraamde warmtevraag is ${result.heatDemand.toLocaleString("nl-BE")} kWh per jaar. Bij een seizoensrendement van ${result.scop} komt het verwachte stroomverbruik uit op ongeveer ${result.electricityUse.toLocaleString("nl-BE")} kWh.`,
-      advice:
-        text(answers, "emitters", "low-temp" as string) === "radiators"
-          ? "Klassieke radiatoren vragen vaak een hogere watertemperatuur. Laat eerst een warmteverliesberekening uitvoeren en controleer of grotere radiatoren nodig zijn."
-          : "Je afgiftesysteem is in beginsel geschikt voor lage temperatuur. Een warmteverliesberekening per ruimte blijft nodig voor de definitieve dimensionering.",
-      scenario: [{ label: "Geschat vermogen", value: `${result.thermalPower} kW` }],
+      summary: `${intro}\n\nVolgens uw gegevens heeft uw ideale warmtepomp een vermogen rond ${kw(result.power)}\n${priceLine}\n${outro}`,
+      advice,
+      cta,
+      scenario: [
+        { label: "Geschat vermogen", value: kw(result.power) },
+        { label: "Prijsklasse", value: result.band.label },
+      ],
       kpis: [
+        { label: "Indicatieve prijs", value: price, hint: "Btw in, geplaatst" },
         {
-          label: "Jaarlijkse stroomkost",
-          value: euro(result.annualCost),
-          hint: `${result.electricityUse.toLocaleString("nl-BE")} kWh/jaar`,
+          label: "Premie",
+          value: hasPremium ? premium : "Niet van toepassing",
+          ...(hasPremium ? { hint: "Mijn VerbouwPremie, onder voorbehoud" } : {}),
         },
-        {
-          label: saves ? "Geschatte jaarbesparing" : "Verschil met huidige kost",
-          value: euro(result.annualSavings),
-        },
-        {
-          label: "Terugverdientijd",
-          value: result.paybackYears ? `${result.paybackYears} jaar` : "Niet berekenbaar",
-        },
+        { label: "Netto investering", value: net, hint: "Na premie" },
       ],
     };
   },

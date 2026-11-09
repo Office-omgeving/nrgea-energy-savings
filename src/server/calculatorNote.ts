@@ -21,6 +21,16 @@ const labels: Record<string, string> = {
   annualSavings: "Jaarlijkse besparing",
   paybackYears: "Terugverdientijd (jaar)",
   resolvedKwh: "Verbruik (kWh)",
+  homeType: "Type woning",
+  fuel: "Huidige verwarming",
+  gasM3: "Jaarverbruik aardgas (m³)",
+  gasKwh: "Jaarverbruik aardgas (kWh)",
+  oilLiters: "Jaarverbruik mazout (liter)",
+  cookingOnGas: "Koken op gas",
+  household: "Gezinssituatie",
+  dependents: "Personen ten laste",
+  taxableIncome: "Netto belastbaar gezinsinkomen (€)",
+  cta: "Agendalink",
 };
 const values: Record<string, string> = {
   both: "Koelen en verwarmen",
@@ -34,6 +44,17 @@ const values: Record<string, string> = {
   electric: "Elektrisch",
   low: "Beperkt",
   high: "Hoog",
+  apartment: "Appartement",
+  row: "Rijhuis",
+  semi: "Half-open",
+  detached: "Open bebouwing",
+  commercial: "Bedrijfspand",
+  "gas-m3": "Aardgas (m³)",
+  "gas-kwh": "Aardgas (kWh)",
+  single: "Alleenstaand",
+  couple: "Samenwonend",
+  yes: "Ja",
+  no: "Nee",
 };
 function label(key: string): string {
   const room = key.match(/^roomArea(\d+)$/);
@@ -54,6 +75,8 @@ export function formatCalculationNote(value: unknown, depth = 0): string {
       .join("\n");
   if (typeof value === "object") {
     const obj = value as Record<string, unknown>;
+    if (typeof obj["label"] === "string" && typeof obj["href"] === "string")
+      return String(obj["href"]);
     if (typeof obj["label"] === "string" && "value" in obj)
       return `${obj["label"]}: ${formatCalculationNote(obj["value"], depth + 1)}${obj["hint"] ? ` (${String(obj["hint"])})` : ""}`;
     return Object.entries(obj)

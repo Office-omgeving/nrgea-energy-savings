@@ -17,7 +17,11 @@ import { getQuestionError } from "./questionValidation";
 
 export type WizardAnswers = Record<string, string | number>;
 
-type VisibilityCondition = { key: string; value: string } | { key: string; min: number };
+type VisibilityCondition =
+  | { key: string; value: string }
+  | { key: string; values: string[] }
+  | { key: string; not: string }
+  | { key: string; min: number };
 
 type ChoiceQuestion = {
   kind: "choice";
@@ -48,17 +52,20 @@ export type WizardQuestionStep = {
   title: string;
   description: string;
   questions: WizardQuestion[];
+  showWhen?: VisibilityCondition;
 };
 
 export type ServiceEstimate = {
-  price: { value: string; hint?: string };
+  price: { value: string; label?: string; hint?: string };
   summary: string;
   advice: string;
+  cta?: { label: string; href: string };
   scenario?: ScenarioItem[];
   kpis: { label: string; value: string; hint?: string }[];
 };
 
 export type CalculatedServiceConfig = {
+  title?: string;
   description: string;
   steps: WizardQuestionStep[];
   initial: WizardAnswers;
@@ -67,12 +74,18 @@ export type CalculatedServiceConfig = {
   resultVariant?: "default" | "facade";
 };
 
+function matches(condition: VisibilityCondition | undefined, answers: WizardAnswers) {
+  if (!condition) return true;
+  const current = answers[condition.key];
+  if ("value" in condition) return current === condition.value;
+  if ("not" in condition) return current !== condition.not;
+  if ("values" in condition)
+    return typeof current === "string" && condition.values.includes(current);
+  return typeof current === "number" && current >= condition.min;
+}
+
 function isVisible(question: WizardQuestion, answers: WizardAnswers) {
-  if (!question.showWhen) return true;
-  const current = answers[question.showWhen.key];
-  return "value" in question.showWhen
-    ? current === question.showWhen.value
-    : typeof current === "number" && current >= question.showWhen.min;
+  return matches(question.showWhen, answers);
 }
 
 function formatAnswer(question: WizardQuestion, answers: WizardAnswers) {
@@ -96,12 +109,16 @@ export function CalculatedServiceWizard({
   const [lead, setLead] = useState<ContactFormValues | null>(null);
   const [questionErrors, setQuestionErrors] = useState<Record<string, string>>({});
 
-  const questionCount = config.steps.length;
+  const steps = useMemo(
+    () => config.steps.filter((item) => matches(item.showWhen, state)),
+    [config.steps, state],
+  );
+  const questionCount = steps.length;
   const overviewStep = questionCount;
   const contactStep = questionCount + 1;
   const resultStep = config.skipContact ? questionCount + 1 : questionCount + 2;
   const stepLabels = [
-    ...config.steps.map((item) => item.title),
+    ...steps.map((item) => item.title),
     "Overzicht",
     ...(config.skipContact ? [] : ["Gegevens"]),
     "Resultaat",
@@ -143,7 +160,7 @@ export function CalculatedServiceWizard({
 
   const reviewItems = useMemo(
     () =>
-      config.steps.flatMap((item) =>
+      steps.flatMap((item) =>
         item.questions
           .filter((question) => isVisible(question, state))
           .map((question) => ({
@@ -151,7 +168,7 @@ export function CalculatedServiceWizard({
             value: formatAnswer(question, state),
           })),
       ),
-    [config.steps, state],
+    [steps, state],
   );
   const estimate = useMemo(() => config.calculate(state), [config, state]);
 
@@ -211,14 +228,14 @@ export function CalculatedServiceWizard({
 
   return (
     <CalculatorWizardShell
-      title={service.title}
+      title={config.title ?? service.title}
       description={config.description}
       steps={stepLabels}
       currentStep={step}
       onBackToOverview={onBackToOverview}
       showBackToOverview={!(config.resultVariant === "facade" && step === resultStep)}
     >
-      {config.steps.map((questionStep, index) =>
+      {steps.map((questionStep, index) =>
         step === index ? (
           <div key={questionStep.title}>{renderQuestionStep(questionStep, index)}</div>
         ) : null,
@@ -289,10 +306,13 @@ export function CalculatedServiceWizard({
           scenarioDetails={config.resultVariant === "facade" ? reviewItems : undefined}
           summary={
             <InfoNotice>
-              {estimate.summary}
-              {lead
-                ? ` We nemen contact op met ${lead.firstName} om dit resultaat te verfijnen.`
-                : ""}
+              <span className="whitespace-pre-line">{estimate.summary}</span>
+              {lead ? (
+                <span className={estimate.summary.includes("\n") ? "mt-3 block" : undefined}>
+                  {estimate.summary.includes("\n") ? "" : " "}We nemen contact op met{" "}
+                  {lead.firstName} om dit resultaat te verfijnen.
+                </span>
+              ) : null}
             </InfoNotice>
           }
           kpis={
@@ -305,9 +325,19 @@ export function CalculatedServiceWizard({
           advice={
             <section className="rounded-xl border border-border bg-card p-4">
               <h3 className="text-sm font-semibold text-foreground">Advies voor jouw situatie</h3>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
                 {estimate.advice}
               </p>
+              {estimate.cta ? (
+                <a
+                  href={estimate.cta.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-flex h-11 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  {estimate.cta.label}
+                </a>
+              ) : null}
             </section>
           }
           onRestart={() => {
