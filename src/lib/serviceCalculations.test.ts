@@ -84,8 +84,8 @@ describe("lucht-waterwarmtepomp", () => {
     expect(result.power).toBe(9);
     expect(result.price).toEqual({ min: 10_680, max: 13_948 });
     expect(result.category).toBe("cat3");
-    expect(result.premium).toEqual({ min: 3_738, max: 4_500 });
-    expect(result.net).toEqual({ min: 6_942, max: 9_448 });
+    expect(result.premium).toEqual({ min: 3_526, max: 4_500 });
+    expect(result.net).toEqual({ min: 7_154, max: 9_448 });
   });
 
   it("geeft geen premie voor een bedrijfspand en op aanvraag boven 17 kW", () => {
@@ -108,7 +108,7 @@ describe("lucht-waterwarmtepomp", () => {
       taxableIncome: 20_000,
     });
     expect(large.onRequest).toBe(true);
-    expect(heatPumpPremium(9_000, "cat4")).toBe(4_500);
+    expect(heatPumpPremium(9_000, "cat4")).toBe(4_245);
     expect(heatPumpPremium(15_430, "cat4")).toBe(6_000);
   });
 });

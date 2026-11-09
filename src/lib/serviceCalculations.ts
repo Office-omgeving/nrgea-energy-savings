@@ -137,11 +137,19 @@ export function getIncomeCategory(
   return "cat1";
 }
 
-/** Mijn VerbouwPremie lucht-water: basisbedrag, begrensd op een percentage van de factuur. */
-export function heatPumpPremium(price: number, category: IncomeCategory) {
+/** Btw-tarief waarmee de prijs (btw in) wordt omgerekend naar factuurbedrag excl. btw. */
+export const HEAT_PUMP_VAT_RATE = 0.06;
+
+/**
+ * Mijn VerbouwPremie lucht-water, zelfde regel als de premiecalculator op nrgea.be:
+ * basisbedrag per categorie, begrensd op een percentage van de factuur excl. btw.
+ */
+export function heatPumpPremium(priceInclVat: number, category: IncomeCategory) {
   const { amounts } = PREMIUM_PRODUCTS["air-water"];
   const percentage = { cat4: 0.5, cat3: 0.35, cat2: 0.25, cat1: 0.2 }[category];
-  return Math.min(amounts[category], Math.round(price * percentage));
+  const invoiceExVat = priceInclVat / (1 + HEAT_PUMP_VAT_RATE);
+  if (invoiceExVat < 1000) return 0;
+  return Math.round(Math.min(amounts[category], invoiceExVat * percentage));
 }
 
 export function calculateHeatPump(input: HeatPumpInput) {

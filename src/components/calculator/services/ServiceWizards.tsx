@@ -462,12 +462,19 @@ const heatPumpConfig: CalculatedServiceConfig = {
       taxableIncome: residential ? number(answers, "taxableIncome", Number.NaN) : undefined,
     });
 
-    const intro =
-      "Waarom nog mazout inslaan of een hoge gasfactuur betalen? Dankzij onze nieuwste hogetemperatuurwarmtepompen kan het voor elk type woning. Met 75 graden vertrektemperatuur leveren ze genoeg warmte, ook voor uw radiatoren. Wij vervangen uw gas- of mazoutketel één-op-één, zonder breekwerk, in 1 à 2 dagen. U verbruikt tot 75% minder energie, en wij regelen alles: warmte-audit, attesten, subsidies en 100% garantie op de goede werking.";
+    // Tekst van Nico (NRGEA, mail 5/11/2026), letterlijk overgenomen.
+    const intro = [
+      "Waarom nog mazout inslaan of een hoge gasfactuur betalen? Dankzij onze nieuwste hogetemperatuurwarmtepompen kan het voor elk type woning.",
+      "Met 75 graden vertrektemperatuur leveren ze genoeg warmte, ook voor uw radiatoren.",
+      "Wij vervangen uw gas- of mazoutketel één-op-één, zonder breekwerk, in 1 à 2 dagen.",
+      "U verbruikt tot 75% minder energie, en wij regelen alles: warmte-audit, attesten, subsidies en 100% garantie op de goede werking.",
+    ].join("\n");
     const outro =
-      "Hiermee bent u volledig gas- of mazoutvrij en verlost van deze hoge energiefacturen en energietaksen (CO2-taks enz.).";
-    const advice =
-      "De rendementen zitten tussen 14 à 30% per jaar, afhankelijk van uw verbruik. De jaarlijkse besparing hangt af van enkele factoren die wij graag samen met u bekijken tijdens een technische controle van de woning.";
+      "Hiermee bent u volledig gas- of mazoutvrij en verlost van deze hoge energiefacturen en energietaksen ( CO2 taks enz)";
+    const advice = [
+      "De rendementen zitten tussen 14 à 30% per jaar afhankelijk van uw verbruik.",
+      "De jaarlijkse besparing hangt af van enkele factoren welke wij graag samen met u bekijken tijdens een technische controle van de woning.",
+    ].join("\n");
     const cta = { label: "Plan een adviesgesprek", href: BOOKING_URL };
 
     if (result.onRequest) {
@@ -477,7 +484,7 @@ const heatPumpConfig: CalculatedServiceConfig = {
           value: "Op aanvraag",
           hint: "Voor een vermogen boven 17 kW maken we een prijs op maat.",
         },
-        summary: `${intro}\n\nVolgens uw gegevens heeft uw ideale warmtepomp een vermogen rond ${kw(result.power)}. Voor dat vermogen maken we graag een prijs op maat, na een korte technische controle van uw woning.`,
+        summary: `${intro}\n\nVolgens uw gegevens heeft uw ideale warmtepomp een vermogen rond ${kw(result.power)}\nvoor dit vermogen maken we graag een prijs op aanvraag`,
         advice,
         cta,
         scenario: [{ label: "Geschat vermogen", value: kw(result.power) }],
@@ -494,8 +501,8 @@ const heatPumpConfig: CalculatedServiceConfig = {
     const net = euroRange(result.net.min, result.net.max);
     const hasPremium = result.premium.max > 0;
     const priceLine = hasPremium
-      ? `Uw indicatieve prijs van ${price} mag u verminderen met ${premium} subsidie. Uw netto investering bedraagt dan ${net}.`
-      : `Uw indicatieve prijs bedraagt ${price}.${residential ? "" : " Voor een bedrijfspand geldt de Mijn VerbouwPremie niet; andere steun bekijken we graag samen."}`;
+      ? `uw indicatieve prijs van ${price} mag u verminderen met ${premium} subsidie\nuw netto investering bedraagt dan ${net}`
+      : `uw indicatieve prijs bedraagt ${price}`;
 
     return {
       price: {
@@ -503,7 +510,7 @@ const heatPumpConfig: CalculatedServiceConfig = {
         value: price,
         hint: `Voor een warmtepomp van ${result.band.label}, vóór premie.`,
       },
-      summary: `${intro}\n\nVolgens uw gegevens heeft uw ideale warmtepomp een vermogen rond ${kw(result.power)}. ${priceLine}\n\n${outro}`,
+      summary: `${intro}\n\nVolgens uw gegevens heeft uw ideale warmtepomp een vermogen rond ${kw(result.power)}\n${priceLine}\n${outro}`,
       advice,
       cta,
       scenario: [

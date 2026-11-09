@@ -318,7 +318,7 @@ export function CalculatedServiceWizard({
           advice={
             <section className="rounded-xl border border-border bg-card p-4">
               <h3 className="text-sm font-semibold text-foreground">Advies voor jouw situatie</h3>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
                 {estimate.advice}
               </p>
               {estimate.cta ? (
