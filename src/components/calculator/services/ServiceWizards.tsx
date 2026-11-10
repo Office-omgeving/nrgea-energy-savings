@@ -467,8 +467,12 @@ const heatPumpConfig: CalculatedServiceConfig = {
       "Ontdek de mogelijkheden om uw gas- of mazoutketel te vervangen door een lucht-waterwarmtepomp. We controleren tijdens een technisch bezoek of uw woning en radiatoren geschikt zijn.";
     const outro =
       "Het vermogen en de prijs zijn indicatief. Een warmteverliesberekening en controle van de installatie bepalen het definitieve voorstel.";
-    const advice =
-      "Uw besparing hangt af van uw woning, verbruik, installatie en energieprijzen. We bekijken dit samen tijdens een technisch bezoek. De premie en netto investering zijn een rekenvoorbeeld op basis van uw inkomen, geen bevestiging van uw recht op premie. Controleer de voorwaarden via de premiecalculator; de definitieve premie kan lager zijn of vervallen.";
+    const advice = [
+      "Uw besparing hangt af van uw woning, verbruik, installatie en energieprijzen. We bekijken dit samen tijdens een technisch bezoek.",
+      residential && !result.onRequest
+        ? "De premie en netto investering zijn een rekenvoorbeeld op basis van uw inkomen, geen bevestiging van uw recht op premie. Controleer de voorwaarden via de premiecalculator; de definitieve premie kan lager zijn of vervallen."
+        : "We controleren tijdens het adviesgesprek of er voor uw situatie steun mogelijk is.",
+    ].join(" ");
     const cta = { label: "Plan een adviesgesprek", href: BOOKING_URL };
 
     if (result.onRequest) {
