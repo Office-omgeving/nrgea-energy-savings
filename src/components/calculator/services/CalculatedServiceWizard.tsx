@@ -57,6 +57,7 @@ export type WizardQuestionStep = {
 
 export type ServiceEstimate = {
   price: { value: string; label?: string; hint?: string };
+  informationLink?: { label: string; href: string };
   summary: string;
   advice: string;
   cta?: { label: string; href: string };
@@ -328,6 +329,16 @@ export function CalculatedServiceWizard({
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
                 {estimate.advice}
               </p>
+              {estimate.informationLink ? (
+                <a
+                  className="mt-3 inline-block text-sm font-medium text-primary underline"
+                  href={estimate.informationLink.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {estimate.informationLink.label}
+                </a>
+              ) : null}
               {estimate.cta ? (
                 <a
                   href={estimate.cta.href}

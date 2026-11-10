@@ -307,7 +307,7 @@ const kw = (value: number) =>
 const heatPumpConfig: CalculatedServiceConfig = {
   title: "Gas- of mazoutvrij met een warmtepomp",
   description:
-    "Vul uw huidig gas- of mazoutverbruik in en ontdek welk vermogen u nodig hebt, wat het kost en wat u na premie netto betaalt.",
+    "Vul uw huidig gas- of mazoutverbruik in en ontdek welk vermogen u nodig hebt, wat het ongeveer kost en welke premie mogelijk is.",
   initial: {
     homeType: "",
     fuel: "",
@@ -406,7 +406,7 @@ const heatPumpConfig: CalculatedServiceConfig = {
     {
       title: "Premie",
       description:
-        "De Mijn VerbouwPremie hangt af van uw gezinsinkomen. Zo berekenen we uw netto investering.",
+        "Uw gezinsinkomen geeft een eerste premie-indicatie. Uw recht op premie en de overige voorwaarden moeten nog gecontroleerd worden.",
       // Standaard tonen (vaste stapteller), enkel weglaten bij een bedrijfspand.
       showWhen: { key: "homeType", not: "commercial" },
       questions: [
@@ -463,19 +463,12 @@ const heatPumpConfig: CalculatedServiceConfig = {
       taxableIncome: residential ? number(answers, "taxableIncome", Number.NaN) : undefined,
     });
 
-    // Tekst van Nico (NRGEA, mail 5/11/2026), letterlijk overgenomen.
-    const intro = [
-      "Waarom nog mazout inslaan of een hoge gasfactuur betalen? Dankzij onze nieuwste hogetemperatuurwarmtepompen kan het voor elk type woning.",
-      "Met 75 graden vertrektemperatuur leveren ze genoeg warmte, ook voor uw radiatoren.",
-      "Wij vervangen uw gas- of mazoutketel één-op-één, zonder breekwerk, in 1 à 2 dagen.",
-      "U verbruikt tot 75% minder energie, en wij regelen alles: warmte-audit, attesten, subsidies en 100% garantie op de goede werking.",
-    ].join("\n");
+    const intro =
+      "Ontdek de mogelijkheden om uw gas- of mazoutketel te vervangen door een lucht-waterwarmtepomp. We controleren tijdens een technisch bezoek of uw woning en radiatoren geschikt zijn.";
     const outro =
-      "Hiermee bent u volledig gas- of mazoutvrij en verlost van deze hoge energiefacturen en energietaksen ( CO2 taks enz)";
-    const advice = [
-      "De rendementen zitten tussen 14 à 30% per jaar afhankelijk van uw verbruik.",
-      "De jaarlijkse besparing hangt af van enkele factoren welke wij graag samen met u bekijken tijdens een technische controle van de woning.",
-    ].join("\n");
+      "Het vermogen en de prijs zijn indicatief. Een warmteverliesberekening en controle van de installatie bepalen het definitieve voorstel.";
+    const advice =
+      "Uw besparing hangt af van uw woning, verbruik, installatie en energieprijzen. We bekijken dit samen tijdens een technisch bezoek. De premie en netto investering zijn een rekenvoorbeeld op basis van uw inkomen, geen bevestiging van uw recht op premie. Controleer de voorwaarden via de premiecalculator; de definitieve premie kan lager zijn of vervallen.";
     const cta = { label: "Plan een adviesgesprek", href: BOOKING_URL };
 
     if (result.onRequest) {
@@ -488,6 +481,10 @@ const heatPumpConfig: CalculatedServiceConfig = {
         summary: `${intro}\n\nVolgens uw gegevens heeft uw ideale warmtepomp een vermogen rond ${kw(result.power)}\nvoor dit vermogen maken we graag een prijs op aanvraag`,
         advice,
         cta,
+        informationLink: {
+          label: "Controleer uw premievoorwaarden",
+          href: "https://www.nrgea.be/nl/bereken-uw-voordeel",
+        },
         scenario: [{ label: "Geschat vermogen", value: kw(result.power) }],
         kpis: [
           { label: "Geschat vermogen", value: kw(result.power) },
@@ -502,7 +499,7 @@ const heatPumpConfig: CalculatedServiceConfig = {
     const net = euroRange(result.net.min, result.net.max);
     const hasPremium = result.premium.max > 0;
     const priceLine = hasPremium
-      ? `uw indicatieve prijs van ${price} mag u verminderen met ${premium} subsidie\nuw netto investering bedraagt dan ${net}`
+      ? `Bij een mogelijke premie van ${premium} zou uw netto investering ${net} bedragen. Zonder premie blijft de indicatieve prijs ${price}.`
       : `uw indicatieve prijs bedraagt ${price}`;
 
     return {
@@ -514,6 +511,10 @@ const heatPumpConfig: CalculatedServiceConfig = {
       summary: `${intro}\n\nVolgens uw gegevens heeft uw ideale warmtepomp een vermogen rond ${kw(result.power)}\n${priceLine}\n${outro}`,
       advice,
       cta,
+      informationLink: {
+        label: "Controleer uw premievoorwaarden",
+        href: "https://www.nrgea.be/nl/bereken-uw-voordeel",
+      },
       scenario: [
         { label: "Geschat vermogen", value: kw(result.power) },
         { label: "Prijsklasse", value: result.band.label },
@@ -521,11 +522,15 @@ const heatPumpConfig: CalculatedServiceConfig = {
       kpis: [
         { label: "Indicatieve prijs", value: price, hint: "Btw in, geplaatst" },
         {
-          label: "Premie",
-          value: hasPremium ? premium : "Niet van toepassing",
+          label: "Mogelijke premie",
+          value: hasPremium ? premium : "Te controleren",
           ...(hasPremium ? { hint: "Mijn VerbouwPremie, onder voorbehoud" } : {}),
         },
-        { label: "Netto investering", value: net, hint: "Na premie" },
+        {
+          label: "Mogelijke netto investering",
+          value: net,
+          hint: "Alleen als de geraamde premie wordt toegekend",
+        },
       ],
     };
   },
