@@ -304,7 +304,7 @@ const euroRange = (min: number, max: number) =>
 const kw = (value: number) =>
   `${new Intl.NumberFormat("nl-BE", { maximumFractionDigits: 1 }).format(value)} kW`;
 
-const heatPumpConfig: CalculatedServiceConfig = {
+export const heatPumpConfig: CalculatedServiceConfig = {
   title: "Gas- of mazoutvrij met een warmtepomp",
   description:
     "Vul uw huidig gas- of mazoutverbruik in en ontdek welk vermogen u nodig hebt, wat het kost en wat u na premie netto betaalt.",
